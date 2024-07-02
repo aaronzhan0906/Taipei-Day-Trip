@@ -6,9 +6,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
-  <script type="module" src="/controllers/booking__controller.js"></script>
   <link rel="stylesheet" href="/views/layouts/user.css">
   <link rel="stylesheet" href="/views/layouts/booking.css">
+  <script src="https://js.tappaysdk.com/sdk/tpdirect/v5.14.0"></script>
+  <script> TPDirect.setupSDK(151768, 'app_bpgvxrsrLqJPEmRm62KQo07LxkPx3pQnADbRY54qEFQvc0kY0flPCYQLRK9a', 'sandbox') </script>
+  <script type="module" src="/controllers/booking__controller.js"></script>
   <title>Taipei Day Trip</title>
 </head>
 <body>
@@ -85,22 +87,21 @@
       <div class="payment__container">
         <div class="payment__title">信用卡付款資訊</div>
         <form class="payment__form">
-          <div>
-            <label class="payment__item">卡片號碼:</label>
-            <input type="text" class="payment__form--name" name="name" placeholder="**** **** **** ****">
+          <div class="payment__items">
+            <label class="payment__label">卡片號碼:</label>
+            <div class="tpfield contact__form--name" id="card-number"></div>
           </div>
-          <div>
-            <label class="payment__item">過期時間:</label>
-            <input type="email" class="payment__form--email" name="name" placeholder="MM / YY">
+          <div class="payment__items">
+            <label class="payment__label">過期時間:</label>
+            <div class="tpfield contact__form--email" id="card-expiration-date"></div>
           </div>
-          <div>
-            <label class="payment__item">驗證密碼:</label>
-            <input type="tel" class="payment__form--telephone" name="name" placeholder="CVV">
+          <div class="payment__items">
+            <label class="payment__label">驗證密碼:</label>
+            <div class="tpfield contact__form--telephone" id="card-ccv"></div>
           </div>
         </form>
       </div>
     </div>
-  
     <div class="confirm">
       <div class="confirm__cost">
         <span>總價：</span>

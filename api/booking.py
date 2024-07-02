@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Header, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from datetime import date
 import jwt
@@ -19,7 +19,6 @@ class BookingInfo(BaseModel):
 # get #
 @router.get("/api/booking")
 async def get_order(authorization: str = Header(...), booking: BookingInfo = None):
-    # print(f"/api/booking GETGETGET {authorization}")
     if authorization == "null": 
         print("未登入")
         raise HTTPException(status_code=403, detail={"error": True, "message": "Not logged in."})
@@ -56,10 +55,11 @@ async def get_order(authorization: str = Header(...), booking: BookingInfo = Non
 
         print(f"要傳到前端的JSON${booking_detail}")
         conn_close(conn)
+
         return JSONResponse(content={"data": booking_detail}, status_code=200)
 
     except Exception as exception:
-        return JSONResponse(content={"error": True, "message": str(exception)}, status_code=500)
+        raise HTTPException(status_code=500, detail={"error": True, "message": str(exception)})
     
 
 
@@ -89,7 +89,7 @@ async def post_order(authorization: str = Header(...), booking: BookingInfo = No
         return JSONResponse(content={"ok": True}, headers={"Authorization": f"Bearer {new_token}"}, status_code=200)
 
     except Exception as exception:
-        return JSONResponse(content={"error": True, "message": str(exception)}, status_code=500)
+        raise HTTPException(status_code=500, detail={"error": True, "message": str(exception)})
 
 
 
@@ -106,4 +106,4 @@ async def delete_order(authorization: str = Header(...)):
         return JSONResponse(content={"ok": True, "message":"刪除API"}, headers={"Authorization": f"Bearer {no_booking_token}"}, status_code=200)
 
     except Exception as exception:
-        return JSONResponse(content={"error": True, "message": str(exception)}, status_code=500)
+        raise HTTPException(status_code=500, detail={"error": True, "message": str(exception)})

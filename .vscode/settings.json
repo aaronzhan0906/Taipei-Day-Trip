@@ -34,5 +34,9 @@
         "comments": "#5d940b"                       // 註解顏色
     },
     "editor.fontSize": 14,
+    "cSpell.words": [
+      "tappay",
+      "tpfield"
+    ],
     
 }

@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Header
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Header, HTTPException
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 import jwt
 import bcrypt 
@@ -42,18 +42,17 @@ async def signup_user(user: UserSignUp):
         cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (user.email,))
         email_count = cursor.fetchone()[0]
         if email_count > 0: 
-            return JSONResponse(content={"error": True, "message": "電子信箱已被註冊"}, status_code=400)
+            raise HTTPException(status_code=400, detail={"error": True, "message": "電子信箱已被註冊"})
 
         hashed_password = hash_password(user.password)
         cursor.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (user.name, user.email, hashed_password))
         conn_commit(conn)
-        print(user.name, user.email, hashed_password)
 
-        return JSONResponse(content={"ok": True, "message": "!!! User signed up successfully !!!"}, status_code=200)
+        return JSONResponse(status_code=200, content={"ok": True, "message": "!!! User signed up successfully !!!"})
     
 
     except Exception as exception:
-        return JSONResponse(content={"error": True, "message": str(exception)}, status_code=500)
+        raise HTTPException(status_code=500, detail={"error": True, "message": str(exception)})
     
     finally:
         conn_close(conn)
@@ -70,7 +69,6 @@ async def get_user_info(authorization: str = Header(...)):
     cursor, conn = get_cursor()
     try:
         token = authorization.split()[1]
-        print(f" /api/user/auth 驗證% {token}")
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
         
@@ -78,18 +76,17 @@ async def get_user_info(authorization: str = Header(...)):
         user_data = cursor.fetchone()
 
         if user_data:
-            print(" /api/user/auth 有這個人")
             user_info = {
                 "id": user_data[0],
                 "name": user_data[1],
                 "email": user_data[2]
             }
-            return JSONResponse(content={"ok": True, "data": user_info, "message": "User is found."}, status_code=200)
+            return JSONResponse(status_code=200, content={"ok": True, "data": user_info, "message": "User is found."})
         else:
-            return JSONResponse(content={"error": True, "message": "User not found."}, status_code=400)
+            raise HTTPException(status_code=400, detail={"error": True, "message": "User not found."})
 
     except Exception as exception:
-        return JSONResponse(content={"error": True, "message": str(exception)}, status_code=500)
+        raise HTTPException(status_code=500, detail={"error": True, "message": str(exception)})
 
     finally:
         conn_close(conn)
@@ -98,25 +95,40 @@ async def get_user_info(authorization: str = Header(...)):
 
 # PUT__SIGNIN
 @router.put("/api/user/auth")
-async def signin_user(user: UserSignIn):
+async def signin_user(user: UserSignIn, response: Response):
     cursor, conn = get_cursor()
 
     if user.email == "" or user.password == "":
-        return JSONResponse(content={"error": True, "message": "The logged-in user did not enter a username or password."}, status_code=400)
+        raise HTTPException(status_code=400, detail={"error": True, "message": "The logged-in user did not enter a username or password."})
     
     try: 
         cursor.execute("SELECT * FROM users WHERE email= %s", (user.email,))
         user_data = cursor.fetchone()
-        print(user_data)
         if not user_data or not check_password(user_data[3], user.password):
-            return JSONResponse(content={"error": True, "message": "The username or password is incorrect."}, status_code=400)
+            raise HTTPException(status_code=400, content={"error": True, "message": "The username or password is incorrect."})
         
         jwt_token = create_jwt_token(user.email)
-
-        return JSONResponse(content={"ok": True, "message": "!!! User signed in successfully !!!", "token": jwt_token}, headers={"Authorization": f"Bearer {jwt_token}"},status_code=200)
+        print(jwt_token)
+        
+        # response.set_cookie(key="jwt" ,value="jwt_token" ,httponly=True, )  待實作 access token 和 refresh token
+        
+        return JSONResponse(status_code=200, content={"ok": True, "message": "!!! User signed in successfully !!!", "token": jwt_token}, headers={"Authorization": f"Bearer {jwt_token}"})
     
     except Exception as exception:
-        return JSONResponse(content={"error": True, "message": str(exception)}, status_code=500)
+        raise HTTPException(status_code=500, detail={"error": True, "message": str(exception)})
     
     finally:
         conn_close(conn)
+
+
+
+from fastapi import FastAPI, Response
+
+app = FastAPI()
+
+@router.get("/api/set-cookie")
+def set_cookie(response: Response):
+    print("hello")
+    response.set_cookie(key="my_cookie", value="cookie_value", httponly=True)
+    return {"message": "Cookie set successfully!"}
+

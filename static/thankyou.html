@@ -3,9 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- 引入 TapPay SDK -->
+  <script src="https://js.tappaysdk.com/tpdirect/v5.1.0"></script>
+  
+  <!-- 設置 TapPay SDK -->
+  <script>
+    TPDirect.setupSDK(151768, 'app_bpgvxrsrLqJPEmRm62KQo07LxkPx3pQnADbRY54qEFQvc0kY0flPCYQLRK9a', 'sandbox');
+
+    var defaultCardViewStyle = {
+      color: 'rgb(0,0,0)',
+      fontSize: '15px',
+      lineHeight: '24px',
+      fontWeight: '300',
+      errorColor: 'red',
+      placeholderColor: ''
+    };
+
+    // 設置 CardView
+    TPDirect.card.setup('#cardview-container', defaultCardViewStyle);
+
+    TPDirect.card.onUpdate(function (update) {
+      var submitButton = document.getElementById('submit-button');
+      var cardViewContainer = document.getElementById('cardview-container');
+
+      // 根據卡片狀態啟用或禁用提交按鈕
+      if (update.canGetPrime) {
+        submitButton.removeAttribute('disabled');
+      } else {
+        submitButton.setAttribute('disabled', true);
+      }
+
+      // 添加或移除錯誤樣式
+      if (update.hasError) {
+        cardViewContainer.classList.add('error');
+      } else {
+        cardViewContainer.classList.remove('error');
+      }
+
+      // 顯示或隱藏錯誤信息
+      if (update.status.number) {
+        showErrorMessage('Please check your credit card number');
+      } else {
+        hideErrorMessage();
+      }
+    });
+
+    function onClick() {
+      TPDirect.card.getPrime(function(result) {
+        if (result.status !== 0) {
+          console.error('getPrime error', result.msg);
+          showErrorMessage(result.msg); // 顯示錯誤信息
+          return;
+        }
+        var prime = result.card.prime;
+        console.log('getPrime success: ' + prime);
+
+        // 將 prime token 發送到後端進行支付處理
+        // 這裡可以根據你的應用場景自行處理後續邏輯
+      });
+    }
+
+    // 顯示錯誤信息的函數
+    function showErrorMessage(message) {
+      var errorContainer = document.createElement('div');
+      errorContainer.style.color = 'red';
+      errorContainer.style.marginTop = '10px';
+      errorContainer.textContent = message;
+      document.body.appendChild(errorContainer);
+    }
+
+    // 隱藏錯誤信息的函數
+    function hideErrorMessage() {
+      var errorContainers = document.querySelectorAll('div[style="color: red; margin-top: 10px;"]');
+      errorContainers.forEach(function(container) {
+        container.parentNode.removeChild(container);
+      });
+    }
+  </script>
+
+  <!-- 樣式表 -->
+  <style>
+    /* 基本樣式 */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    #cardview-container {
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    #cardview-container.error {
+      border-color: red;
+    }
+
+    #submit-button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #submit-button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* 響應式樣式 */
+    @media (max-width: 600px) {
+      #cardview-container {
+        width: 100%;
+      }
+    }
+  </style>
+
   <title>Thank You</title>
 </head>
 <body>
-  
+  <div>
+    <label>CardView</label>
+    <div id="cardview-container"></div>
+    <button id="submit-button" onclick="onClick()" disabled>Submit</button>
+  </div>
 </body>
 </html>

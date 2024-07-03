@@ -72,12 +72,12 @@ async def get_user_info(authorization: str = Header(...)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
         
-        cursor.execute("SELECT id, name, email FROM users WHERE email = %s", (email,))
+        cursor.execute("SELECT user_id, name, email FROM users WHERE email = %s", (email,))
         user_data = cursor.fetchone()
 
         if user_data:
             user_info = {
-                "id": user_data[0],
+                "user_id": user_data[0],
                 "name": user_data[1],
                 "email": user_data[2]
             }

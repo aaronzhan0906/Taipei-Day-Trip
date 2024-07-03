@@ -80,7 +80,7 @@ async def attractions(page: int = Query(0, ge=0), keyword: str = Query(None)):
 async def attractions(attractionId: int):
     try:
         cursor, conn = get_cursor()
-        query = "SELECT * FROM attractions WHERE id = %s"
+        query = "SELECT * FROM attractions WHERE attraction_id = %s"
         cursor.execute(query, (attractionId,))
         attraction = cursor.fetchone()
 

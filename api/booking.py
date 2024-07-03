@@ -32,7 +32,7 @@ async def get_order(authorization: str = Header(...), booking: BookingInfo = Non
             return JSONResponse(content={"data": None}, status_code=200)
 
         cursor, conn = get_cursor()
-        query = "SELECT id, name, address, images FROM attractions WHERE id = %s"
+        query = "SELECT attraction_id, name, address, images FROM attractions WHERE attraction_id = %s"
         try:
             cursor.execute(query, (booking["attractionId"],))
             attraction = cursor.fetchone()

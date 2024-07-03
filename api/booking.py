@@ -73,7 +73,7 @@ async def post_order(authorization: str = Header(...), booking: BookingInfo = No
     try:
         token = authorization.split()[1]
         if not booking:
-            return JSONResponse(content={"error": True, "message": "建立失敗，輸入不正確或其他原因"}, status_code=400)
+            raise HTTPException(status_code=400, content={"error": True, "message": "建立失敗，輸入不正確或其他原因"})
 
 
         new_booking = {

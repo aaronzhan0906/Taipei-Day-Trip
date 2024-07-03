@@ -1,44 +1,32 @@
-export const setupTapPay = () => {
+export const setupTapPay = (tripDetail) => {
     TPDirect.card.setup({
         fields: {
             number: {
-                element: '#card-number',
-                placeholder: '**** **** **** ****'
+                element: "#card-number",
+                placeholder: "**** **** **** ****"
             },
             expirationDate: {
-                element: document.getElementById('card-expiration-date'),
-                placeholder: 'MM / YY'
+                element: document.getElementById("card-expiration-date"),
+                placeholder: "MM / YY"
             },
             ccv: {
-                element: '#card-ccv',
-                placeholder: 'ccv'
+                element: "#card-ccv",
+                placeholder: "ccv"
             }
         },
         styles: {
-            'input': {
-                'color': 'gray'
+            ":focus": {
+                "color": "black"
             },
-            'input.ccv': {
-                // 'font-size': '16px'
+            ".valid": {
+                "color": "green"
             },
-            'input.expiration-date': {
-                // 'font-size': '16px'
+            ".invalid": {
+                "color": "red"
             },
-            'input.card-number': {
-                // 'font-size': '16px'
-            },
-            ':focus': {
-                'color': 'black'
-            },
-            '.valid': {
-                'color': 'green'
-            },
-            '.invalid': {
-                'color': 'red'
-            },
-            '@media screen and (max-width: 400px)': {
-                'input': {
-                    'color': 'orange'
+            "@media screen and (max-width: 400px)": {
+                "input": {
+                    "color": "orange"
                 }
             }
         },
@@ -53,93 +41,132 @@ export const setupTapPay = () => {
     TPDirect.card.onUpdate(function (update) {
         if (update.canGetPrime) {
             // Enable submit button to get prime
-            document.querySelector('.confirm__submit').removeAttribute('disabled');
+            document.querySelector(".confirm__submit").removeAttribute("disabled");
         } else {
             // Disable submit button to get prime
-            document.querySelector('.confirm__submit').setAttribute('disabled', true);
+            document.querySelector(".confirm__submit").setAttribute("disabled", true);
         }
 
-        // Handle card type
+        // Handle card type 
         if (update.cardType) {
-            console.log(`Card type: ${update.cardType}`);
-        }
+            switch (update.cardType) {
+                case "visa":
+                    TPDirect.ccv.setupCardType(TPDirect.CardType.VISA);
+                    break;
+                case "jcb":
+                    TPDirect.ccv.setupCardType(TPDirect.CardType.JCB);
+                    break;
+                case "mastercard":
+                    TPDirect.ccv.setupCardType(TPDirect.CardType.MASTERCARD);
+                    break;
+            }
+         }
 
         // Handle field status
-        ['number', 'expiry', 'ccv'].forEach(field => {
+        ["number", "expiry", "ccv"].forEach(field => {
             const element = document.querySelector(`#card-${field}`);
             if (update.status[field] === 2) {
-                element.classList.add('invalid');
-                element.classList.remove('valid');
+                element.classList.add("invalid");
+                element.classList.remove("valid");
             } else if (update.status[field] === 0) {
-                element.classList.add('valid');
-                element.classList.remove('invalid');
+                element.classList.add("valid");
+                element.classList.remove("invalid");
             } else {
-                element.classList.remove('valid', 'invalid');
+                element.classList.remove("valid", "invalid");
             }
         });
     });
 
-    const confirmButton = document.querySelector('.confirm__submit');
-    confirmButton.addEventListener('click', onSubmit);
+    const confirmButton = document.querySelector(".confirm__submit");
+    confirmButton.addEventListener("click", (event) => onSubmit(event, tripDetail));
 };
 
 
-function onSubmit(event) {
+const validateContactInfo = () => {
+    const nameElement = document.querySelector(".contact__form--name");
+    const emailElement = document.querySelector(".contact__form--email");
+    const phoneElement = document.querySelector(".contact__form--telephone");
+
+    const name = nameElement ? nameElement.value.trim() : "";
+    const email = emailElement ? emailElement.value.trim() : "";
+    const phone = phoneElement ? phoneElement.value.trim() : "";
+
+    if (!name){
+        alert("請輸入名字")
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!email || !emailPattern.test(email)){
+        alert("請輸入有效的電子郵件");
+        return false;
+    }
+
+    const phonePattern = /^[0-9]{10}$/;
+    if(!phone || !phonePattern.test(phone)) {
+        alert("請輸入有效的電話號碼");
+        return false;
+    }
+
+    return { name, email, phone };
+}
+
+
+const onSubmit = (event, tripDetail) =>  {
     event.preventDefault();
 
     const tappayStatus = TPDirect.card.getTappayFieldsStatus();
+    const contactInfo = validateContactInfo();
+    if (!contactInfo) {
+        return;
+    }
 
     if (tappayStatus.canGetPrime === false) {
-        alert('無法取得 Prime，請檢查信用卡資訊是否正確');
+        console.log("無法取得 Prime，請檢查信用卡資訊是否正確");
         return;
     }
 
     TPDirect.card.getPrime((result) => {
         if (result.status !== 0) {
-            alert('取得 Prime 失敗: ' + result.msg);
+            alert("取得 Prime 失敗: " + result.msg);
             return;
         }
 
         const prime = result.card.prime;
         console.log(prime)
         
-        const paymentData = {
+        const orderData = {
             prime: prime,
             order: {
-                price: document.querySelector('.confirm__cost--variable').textContent,
-                trip: document.querySelector('.section__attraction--variable').textContent,
-                date: document.querySelector('.section__date--variable').textContent,
-                time: document.querySelector('.section__time--variable').textContent
+                price: tripDetail.price,
+                trip: tripDetail.attraction,
+                date: tripDetail.date,
+                time: tripDetail.time,
+                contact: contactInfo
             },
-            contact: {
-                name: document.querySelector('.contact__form--name').value,
-                email: document.querySelector('.contact__form--email').value,
-                phone: document.querySelector('.contact__form--telephone').value
-            }
         };
-
-        sendPaymentToServer(paymentData);
+        console.log(orderData)
+        sendPaymentToServer(orderData);
     });
 }
 
-function sendPaymentToServer(paymentData) {
-    fetch('/api/payment', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(paymentData),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('付款成功！');
+async function sendPaymentToServer(orderData) {
+    try {
+        const response = await fetch("/api/orders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(orderData),
+        });
+
+        const paymentData = await response.json();
+        if (paymentData.success) {
+            console.log("付款成功！");
         } else {
-            alert('付款失敗：' + data.message);
+            console.log("付款失敗：" + paymentData.message);
         }
-    })
-    .catch(error => {
-        console.error('支付請求錯誤:', error);
-        alert('發生錯誤，請稍後再試');
-    });
+    } catch (error) {
+        console.error("支付請求錯誤：", error);
+        alert("發生錯誤，請稍後再試");
+    }
 }

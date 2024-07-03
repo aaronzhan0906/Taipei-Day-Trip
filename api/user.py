@@ -122,13 +122,3 @@ async def signin_user(user: UserSignIn, response: Response):
 
 
 
-from fastapi import FastAPI, Response
-
-app = FastAPI()
-
-@router.get("/api/set-cookie")
-def set_cookie(response: Response):
-    print("hello")
-    response.set_cookie(key="my_cookie", value="cookie_value", httponly=True)
-    return {"message": "Cookie set successfully!"}
-

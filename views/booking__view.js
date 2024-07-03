@@ -34,8 +34,9 @@ export const renderBookingPage = async () => {
             });
 
             const journeyData = await response.json();
-            console.log(journeyData)
-            console.log(journeyData.data)
+            
+          
+
 
             if (journeyGreetUsername) {
                 journeyGreetUsername.textContent = signInName;
@@ -54,8 +55,9 @@ export const renderBookingPage = async () => {
                 journey.style.borderBottom = "none";
             } else {
                 const { attraction, date, time, price } = journeyData.data;
+                const tripDetail = journeyData.data
                 createBookingDOM(attraction, date, time, price);
-                setupTapPay();
+                setupTapPay(tripDetail);
             }
         } catch (error) {
             console.error(error);

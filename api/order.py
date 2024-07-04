@@ -3,7 +3,8 @@ from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from datetime import datetime
 import re._compiler
-import requests
+import aiohttp
+import asyncio
 import re
 import shortuuid
 import json
@@ -53,7 +54,7 @@ async def post_order(order_detail: OrderDetail, authorization: str = Header(...)
         user_email = user_info["email"]
 
 
-        tappay_result = process_tappay_payment(order_detail, order_number)
+        tappay_result = await process_tappay_payment(order_detail, order_number)
         # print(tappay_result)
         payment_status = "PAID" if tappay_result["status"] == 0 else "UNPAID"
         insert_order_query = """
@@ -130,7 +131,8 @@ TAPPAY_SANDBOX_URL = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
 TAPPAY_PARTNER_KEY = "partner_p1becyZviOfzZZHeDntgb8WpTLd8UsRYdp1ikOk0y7AqxiwUyQWLiguI"  
 TAPPAY_MERCHANT_ID = "aaronzhan0906_GP_POS_3"  
 
-def process_tappay_payment(order_detail, order_number):
+
+async def process_tappay_payment(order_detail, order_number):
     headers = {
         "Content-Type": "application/json",
         "x-api-key": TAPPAY_PARTNER_KEY
@@ -150,8 +152,19 @@ def process_tappay_payment(order_detail, order_number):
         "remember": True 
     }
 
-    response = requests.post(TAPPAY_SANDBOX_URL, json=payload, headers=headers)
-    return response.json()
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.post(TAPPAY_SANDBOX_URL, json=payload, headers=headers) as response:
+                if response.status == 200:
+                    return await response.json()
+                else:
+                    error_text = await response.text()
+                    raise Exception(f"TapPay API error: {response.status} - {error_text}")
+        except aiohttp.ClientError as exception:
+            raise Exception(f"Network error when contacting TapPay: {str(exception)}")
+        except asyncio.TimeoutError:
+            raise Exception("Request to TapPay timed out")
+
 
 def generate_order_number():
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")

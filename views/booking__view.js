@@ -34,9 +34,6 @@ export const renderBookingPage = async () => {
             });
 
             const journeyData = await response.json();
-            
-          
-
 
             if (journeyGreetUsername) {
                 journeyGreetUsername.textContent = signInName;

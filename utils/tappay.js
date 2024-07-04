@@ -159,12 +159,17 @@ async function sendPaymentToServer(orderData) {
             },
             body: JSON.stringify(orderData),
         });
-
+        
+        const newToken = response.headers.get("Authorization")
+        if (newToken) localStorage.setItem("jwt", newToken);
+        
         const paymentData = await response.json();
-        if (paymentData.success) {
+        if (paymentData.data.payment.status === 0) {
+            const order_number = paymentData.data.number
+            window.location.href = `/thankyou?number=${order_number}`
             console.log("付款成功！");
         } else {
-            console.log("付款失敗：" + paymentData.message);
+            console.log("付款失敗：");
         }
     } catch (error) {
         console.error("支付請求錯誤：", error);

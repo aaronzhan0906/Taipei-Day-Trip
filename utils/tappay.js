@@ -131,9 +131,7 @@ const onSubmit = (event, tripDetail) =>  {
             return;
         }
 
-        const prime = result.card.prime;
-        console.log(prime)
-        
+        const prime = result.card.prime;        
         const orderData = {
             prime: prime,
             order: {

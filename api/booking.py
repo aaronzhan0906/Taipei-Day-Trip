@@ -19,11 +19,11 @@ class BookingInfo(BaseModel):
 # get #
 @router.get("/api/booking")
 async def get_order(authorization: str = Header(...), booking: BookingInfo = None):
-    if authorization == "null": 
-        print("未登入")
-        raise HTTPException(status_code=403, detail={"error": True, "message": "Not logged in."})
-    
     try:
+        if authorization == "null": 
+            print("未登入")
+            return JSONResponse(status_code=403, content={"error": True, "message": "Not logged in."})
+        
         token = authorization.split()[1]
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         booking = payload.get("booking")
@@ -38,6 +38,7 @@ async def get_order(authorization: str = Header(...), booking: BookingInfo = Non
             attraction = cursor.fetchone()
             if not attraction:
                 return JSONResponse(content={"data": None}, status_code=200)
+            
         except Exception as exception:
             print(f"Error fetching attraction details: {exception}")
       
@@ -66,14 +67,15 @@ async def get_order(authorization: str = Header(...), booking: BookingInfo = Non
 # post #
 @router.post("/api/booking")
 async def post_order(authorization: str = Header(...), booking: BookingInfo = None):
-    if authorization == "null": 
-        print("未登入")
-        raise HTTPException(status_code=403, detail={"error": True, "message": "Not logged in."})
-
+    
     try:
+        if authorization == "null": 
+            print("未登入")
+            return JSONResponse(status_code=403, content={"error": True, "message": "Not logged in."})
+
         token = authorization.split()[1]
         if not booking:
-            raise HTTPException(status_code=400, content={"error": True, "message": "建立失敗，輸入不正確或其他原因"})
+            return JSONResponse(status_code=400, content={"error": True, "message": "建立失敗，輸入不正確或其他原因"})
 
 
         new_booking = {

@@ -9,7 +9,7 @@ import re
 import shortuuid
 import json
 from api.user import get_user_info
-from api.jwt_utils import remove_booking_from_jwt, SECRET_KEY, ALGORITHM
+from api.jwt_utils import remove_booking_from_jwt, confirm_same_user_by_jwt
 from data.database import get_cursor, conn_commit, conn_close
 
 router = APIRouter()
@@ -176,6 +176,7 @@ def generate_order_number():
 async def get_order(orderNumber: str, authorization: str = Header(...)):
     if authorization == "null":
         raise HTTPException(status=403, detail={"error": True,  "message": "Not logged in."})
+    
     try:
         cursor, conn = get_cursor()
         query = """
@@ -201,7 +202,10 @@ async def get_order(orderNumber: str, authorization: str = Header(...)):
         cursor.execute(query, (orderNumber,))
         order = cursor.fetchone()
 
-        # if order[2] !== 
+        # confirm same user by email in jwt 
+        token = authorization.split()[1]
+        if not confirm_same_user_by_jwt(token, order[2]):
+            return
 
         order_data = {
             "number": order[0],  

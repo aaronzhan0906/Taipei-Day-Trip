@@ -24,7 +24,7 @@ def update_jwt_payload(token: str, new_data: dict) -> str:
 
         payload["exp"] = datetime.now(tz=timezone.utc) + timedelta(hours=168)
         updated_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-        print(f"JWT更新 form update_jwt_payload:::{updated_token}")
+        print(f"JWT更新 form update_jwt_payload")
 
         return updated_token
 
@@ -39,9 +39,14 @@ def remove_booking_from_jwt(token: str) -> str:
         del payload["booking"]
         payload["exp"] = datetime.now(tz=timezone.utc) + timedelta(hours=168)
         updated_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-        print(f"JWT 已更新，booking 已移除")
+        print(f"JWT 已更新，booking 已移除 from remove_booking_from_jwt")
         return updated_token
 
     except jwt.PyJWTError as exception:
         print(f"JWT Error: {exception}")
         return None
+    
+def confirm_same_user_by_jwt(token: str, user_email: str) -> str:
+    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    payload["sub"] = user_email
+    return True

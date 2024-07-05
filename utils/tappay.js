@@ -162,13 +162,13 @@ async function sendPaymentToServer(orderData) {
         
         const newToken = response.headers.get("Authorization")
         if (newToken) localStorage.setItem("jwt", newToken);
-        
         const paymentData = await response.json();
+        const order_number = paymentData.data.number
+
         if (paymentData.data.payment.status === 0) {
-            const order_number = paymentData.data.number
             window.location.href = `/thankyou?number=${order_number}`
         } else {
-            alert("付款失敗")
+            alert(`付款失敗，訂單編號 ${order_number}`)
         }
     } catch (error) {
         console.error("支付請求錯誤：", error);

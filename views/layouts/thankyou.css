@@ -101,3 +101,28 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     line-height: 13.3px;
 }
+
+@media (min-width: 360px) and (max-width: 959px) {
+    
+    .navigation__container {
+        width: calc(100% - 21px);
+        margin: 0 auto;
+    }
+
+    .main {
+        width: calc(100% - 20px);
+    }
+
+}
+
+@media (min-width: 960px) and (max-width: 1280px) {
+    
+    .navigation__container {
+        width: 90%;
+    }
+
+    .main {
+        width: calc(100% - 20px);
+    }
+
+}

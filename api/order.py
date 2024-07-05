@@ -127,49 +127,7 @@ async def post_order(order_detail: OrderDetail, authorization: str = Header(...)
     finally:
         conn_close(conn)
 
-TAPPAY_SANDBOX_URL = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
-TAPPAY_PARTNER_KEY = "partner_p1becyZviOfzZZHeDntgb8WpTLd8UsRYdp1ikOk0y7AqxiwUyQWLiguI"  
-TAPPAY_MERCHANT_ID = "aaronzhan0906_GP_POS_3"  
 
-
-async def process_tappay_payment(order_detail, order_number):
-    headers = {
-        "Content-Type": "application/json",
-        "x-api-key": TAPPAY_PARTNER_KEY
-    }
-    payload = {
-        "prime": order_detail.prime,
-        "partner_key": TAPPAY_PARTNER_KEY,
-        "merchant_id": TAPPAY_MERCHANT_ID,
-        "details": "Taipei Day Trip Order",
-        "amount": order_detail.order.price,  
-        "order_number": order_number,
-        "cardholder": {
-            "phone_number": order_detail.order.contact["phone"],
-            "name": order_detail.order.contact["name"], 
-            "email": order_detail.order.contact["email"],
-        },
-        "remember": True 
-    }
-
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.post(TAPPAY_SANDBOX_URL, json=payload, headers=headers) as response:
-                if response.status == 200:
-                    return await response.json()
-                else:
-                    error_text = await response.text()
-                    raise Exception(f"TapPay API error: {response.status} - {error_text}")
-        except aiohttp.ClientError as exception:
-            raise Exception(f"Network error when contacting TapPay: {str(exception)}")
-        except asyncio.TimeoutError:
-            raise Exception("Request to TapPay timed out")
-
-
-def generate_order_number():
-    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-    short_id = shortuuid.uuid()[:10]
-    return f"{timestamp}-{short_id}"
 
 # get #
 @router.get("/api/order/{orderNumber}")
@@ -225,7 +183,7 @@ async def get_order(orderNumber: str, authorization: str = Header(...)):
                 "email": order[4],
                 "phone": order[5]
             },
-            "status": 0 if order[1] == "PAID" else 1
+            "status": 0 
         } 
 
         return {"data": order_data}
@@ -235,3 +193,48 @@ async def get_order(orderNumber: str, authorization: str = Header(...)):
     
     finally:
         conn_close(conn)
+
+
+TAPPAY_SANDBOX_URL = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
+TAPPAY_PARTNER_KEY = "partner_p1becyZviOfzZZHeDntgb8WpTLd8UsRYdp1ikOk0y7AqxiwUyQWLiguI"  
+TAPPAY_MERCHANT_ID = "aaronzhan0906_GP_POS_3"  
+
+
+async def process_tappay_payment(order_detail, order_number):
+    headers = {
+        "Content-Type": "application/json",
+        "x-api-key": TAPPAY_PARTNER_KEY
+    }
+    payload = {
+        "prime": order_detail.prime,
+        "partner_key": TAPPAY_PARTNER_KEY,
+        "merchant_id": TAPPAY_MERCHANT_ID,
+        "details": "Taipei Day Trip Order",
+        "amount": order_detail.order.price,  
+        "order_number": order_number,
+        "cardholder": {
+            "phone_number": order_detail.order.contact["phone"],
+            "name": order_detail.order.contact["name"], 
+            "email": order_detail.order.contact["email"],
+        },
+        "remember": True 
+    }
+
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.post(TAPPAY_SANDBOX_URL, json=payload, headers=headers) as response:
+                if response.status == 200:
+                    return await response.json()
+                else:
+                    error_text = await response.text()
+                    raise Exception(f"TapPay API error: {response.status} - {error_text}")
+        except aiohttp.ClientError as exception:
+            raise Exception(f"Network error when contacting TapPay: {str(exception)}")
+        except asyncio.TimeoutError:
+            raise Exception("Request to TapPay timed out")
+
+
+def generate_order_number():
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    short_id = shortuuid.uuid()[:10]
+    return f"{timestamp}-{short_id}"

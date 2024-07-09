@@ -5,7 +5,7 @@ from datetime import date
 import jwt
 from api.user import get_user_info
 from api.jwt_utils import update_jwt_payload, SECRET_KEY, ALGORITHM
-from data.database import get_cursor, conn_commit, conn_close
+from data.database import get_cursor, conn_close
 
 router = APIRouter()
 

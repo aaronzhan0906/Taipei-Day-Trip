@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from data.database import get_cursor, conn_commit, conn_close
 
 class MRTModel:

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ValidationError 
 from typing import List
@@ -9,7 +9,7 @@ from data.database import get_cursor, conn_close
 import jwt
 
 
-
+# model
 class BookingModel:
     @staticmethod
     def get_booking_from_token(token):
@@ -74,8 +74,6 @@ class BookingView:
 
 
 
-
-
 # controller
 
 router = APIRouter()
@@ -102,30 +100,24 @@ async def get_order(authorization: str = Header(...)):
         token = authorization.split()[1]
         booking = BookingModel.get_booking_from_token(token)
         if not booking:
-            return BookingView.ok_response(data=None)
+            return BookingView.ok_response(200, data=None)
 
         attraction = BookingModel.get_attraction_details(booking["attractionId"])
         if not attraction:
-            return BookingView.ok_response(data=None)
+            return BookingView.ok_response(200, data=None)
 
         booking_detail = BookingModel.create_booking_detail(attraction, booking)
         return BookingView.ok_response(200, data=booking_detail)
 
     except Exception as exception:
-        print(f"Error in get_order: {exception}")
-        return BookingView.error_response(500, "An unexpected error occurred")
+        return BookingView.error_response(500, str(exception))
 
 @router.post("/api/booking")
-async def post_order(authorization: str = Header(...), booking: BookingInfo= None):
+async def post_order(authorization: str = Header(...), booking: BookingInfo = None):
     if authorization == "null":
         return BookingView.error_response(403, "Not logged in.")
     
     try:
-        validation_errors = validate_booking(booking)
-        if validation_errors:
-            error_message = "; ".join(validation_errors)
-            return BookingView.error_response(400, f"建立失敗，輸入不正確: {error_message}")
-
         token = authorization.split()[1]
         new_booking = BookingModel.create_new_booking(booking)
         new_token = BookingModel.update_booking_token(token, new_booking)
@@ -136,8 +128,7 @@ async def post_order(authorization: str = Header(...), booking: BookingInfo= Non
         return BookingView.error_response(400, f"建立失敗，輸入不正確: {error_messages}")
 
     except Exception as exception:
-        print(f"Error in post_order: {exception}")
-        return BookingView.error_response(500, "建立失敗，系統錯誤")
+        return BookingView.error_response(500, str(exception))
 
 @router.delete("/api/booking")
 async def delete_order(authorization: str = Header(...)):
@@ -151,5 +142,4 @@ async def delete_order(authorization: str = Header(...)):
         return BookingView.ok_response(200, message="刪除API", token=no_booking_token)
 
     except Exception as exception:
-        print(f"Error in delete_order: {exception}")
-        return BookingView.error_response(500, "An unexpected error occurred")
+        return BookingView.error_response(500, str(exception))

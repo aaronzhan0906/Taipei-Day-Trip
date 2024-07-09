@@ -19,17 +19,14 @@ class BookingInfo(BaseModel):
 # get #
 @router.get("/api/booking")
 async def get_order(authorization: str = Header(...), booking: BookingInfo = None):
-    try:
-        if authorization == "null": 
+    if authorization == "null": 
             print("未登入")
             return JSONResponse(status_code=403, content={"error": True, "message": "Not logged in."})
-        
+    try:
         token = authorization.split()[1]
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         booking = payload.get("booking")
-        if not booking:
-            print("No booking or empty booking")
-            return JSONResponse(content={"data": None}, status_code=200)
+        
 
         cursor, conn = get_cursor()
         query = "SELECT attraction_id, name, address, images FROM attractions WHERE attraction_id = %s"
@@ -67,16 +64,13 @@ async def get_order(authorization: str = Header(...), booking: BookingInfo = Non
 # post #
 @router.post("/api/booking")
 async def post_order(authorization: str = Header(...), booking: BookingInfo = None):
+    if authorization == "null": 
+        print("未登入")
+        return JSONResponse(status_code=403, content={"error": True, "message": "Not logged in."})
     
     try:
-        if authorization == "null": 
-            print("未登入")
-            return JSONResponse(status_code=403, content={"error": True, "message": "Not logged in."})
 
         token = authorization.split()[1]
-        if not booking:
-            return JSONResponse(status_code=400, content={"error": True, "message": "建立失敗，輸入不正確或其他原因"})
-
 
         new_booking = {
             "attractionId": booking.attractionId,

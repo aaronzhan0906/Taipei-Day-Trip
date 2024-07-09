@@ -1,40 +1,41 @@
-import re
 from fastapi import APIRouter, Header, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-import jwt
-import bcrypt 
 from data.database import get_cursor, conn_commit, conn_close
 from api.jwt_utils import create_jwt_token, SECRET_KEY, ALGORITHM
+import jwt
+import bcrypt 
+import re
+
 
 # Model
 class UserModel:
     email_pattern = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
 
-    @classmethod
-    def hash_password(cls, password: str) -> str:
+    @staticmethod
+    def hash_password(password: str) -> str:
         salt = bcrypt.gensalt(rounds=12)
         hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
         return hashed.decode("utf-8")
 
-    @classmethod
-    def check_password(cls, hashed_password: str, password: str) -> bool:
+    @staticmethod
+    def check_password(hashed_password: str, password: str) -> bool:
         return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
 
-    @classmethod
-    def create_user(cls, name: str, email: str, password: str):
+    @staticmethod
+    def create_user(name: str, email: str, password: str):
         try:
             cursor, conn = get_cursor()
-            hashed_password = cls.hash_password(password)
+            hashed_password = UserModel.hash_password(password)
             cursor.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (name, email, hashed_password))
             conn_commit(conn)
             conn_close(conn)
         except Exception as exception:
+            conn_close(conn)
             raise exception
-            
 
-    @classmethod
-    def get_user_by_email(cls, email: str):
+    @staticmethod
+    def get_user_by_email(email: str):
         try:
             cursor, conn = get_cursor()
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
@@ -42,10 +43,10 @@ class UserModel:
             return cursor.fetchone()
         except Exception as exception:
             raise exception
+            
 
-
-    @classmethod
-    def get_user_info(cls, email: str):
+    @staticmethod
+    def get_user_info(email: str):
         try:
             cursor, conn = get_cursor()
             cursor.execute("SELECT user_id, name, email FROM users WHERE email = %s", (email,))
@@ -55,11 +56,9 @@ class UserModel:
             raise exception
 
 
-    @classmethod
-    def is_valid_email(cls, email: str) -> bool:
-        return bool(cls.email_pattern.match(email))
-
-
+    @staticmethod
+    def is_valid_email(email: str) -> bool:
+        return bool(UserModel.email_pattern.match(email))
 
 
 # View
@@ -112,10 +111,10 @@ async def signup_user(user: UserSignUp):
 
 @router.get("/api/user/auth")
 async def get_user_info(authorization: str = Header(...)):
-    try:
-        if authorization == "null":
+    if authorization == "null":
             return UserView.error_response(400, "No JWT checked from backend.")
-
+    
+    try:
         token = authorization.split()[1]
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
@@ -135,10 +134,10 @@ async def get_user_info(authorization: str = Header(...)):
 
 @router.put("/api/user/auth")
 async def signin_user(user: UserSignIn):
+    if not all([user.email, user.password]):
+        return UserView.error_response(400, "The logged-in user did not enter a username or password.")
+    
     try:
-        if not all([user.email, user.password]):
-            return UserView.error_response(400, "The logged-in user did not enter a username or password.")
-
         user_data = UserModel.get_user_by_email(user.email)
         if not user_data or not UserModel.check_password(user_data[3], user.password):
             return UserView.error_response(400, "The username or password is incorrect.")

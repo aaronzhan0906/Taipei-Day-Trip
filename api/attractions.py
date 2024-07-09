@@ -1,6 +1,7 @@
 from fastapi import *
 from fastapi.responses import JSONResponse
 from data.database import get_cursor, conn_commit, conn_close
+from api.models.mrtsModel import MRTModel
 router = APIRouter()
 sorted_mrts_names = []
 
@@ -15,7 +16,8 @@ async def attractions(page: int = Query(0, ge=0), keyword: str = Query(None)):
         filters = []
         params = []
         
-        mrt_stations = [mrt[0] for mrt in get_sorted_mrts_names()]
+       
+        mrt_stations = MRTModel.get_sorted_mrts()
 
         if keyword:
             if keyword in mrt_stations: 
@@ -115,11 +117,3 @@ def process_images(images_raw):
         images_raw = images_raw.strip('"').replace('\\\\','\\')
         images_list = images_raw.split('\\n')
         return images_list
-
-
-def set_sorted_mrts_names(names):
-    global sorted_mrts_names
-    sorted_mrts_names = names
-
-def get_sorted_mrts_names():
-    return sorted_mrts_names

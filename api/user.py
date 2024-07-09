@@ -31,19 +31,19 @@ def check_password(hashed_password: str, password: str) -> bool:
 @router.post("/api/user")
 async def signup_user(user: UserSignUp):
     cursor, conn = get_cursor()
-
-    if user.name =="" or user.email == "" or user.password == "" :
-        return JSONResponse(content={"error": True, "message": "Missing required fields"}, status_code=400)
-
-    if "@" not in user.email:
-        return JSONResponse(content={"error": True, "message": "電子信箱格式錯誤"}, status_code=400)
-
+    
     try:
+        if user.name =="" or user.email == "" or user.password == "" :
+            return JSONResponse(status_code=400, content={"error": True, "message": "Missing required fields"})
+
+        if "@" not in user.email:
+            return JSONResponse(status_code=400, content={"error": True, "message": "電子信箱格式錯誤"})
+
         cursor.execute("SELECT COUNT(*) FROM users WHERE email = %s", (user.email,))
         email_count = cursor.fetchone()[0]
         if email_count > 0: 
-            raise HTTPException(status_code=400, detail={"error": True, "message": "電子信箱已被註冊"})
-
+            return JSONResponse(status_code=400, content={"error": True, "message": "電子信箱已被註冊"})
+      
         hashed_password = hash_password(user.password)
         cursor.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (user.name, user.email, hashed_password))
         conn_commit(conn)
@@ -62,12 +62,13 @@ async def signup_user(user: UserSignUp):
 # GET__USER-INFO
 @router.get("/api/user/auth")
 async def get_user_info(authorization: str = Header(...)):
-    if authorization == "null": 
-        print("未登入")
-        return JSONResponse(content={"data": "null", "message":"No JWT checked from backend."})
-    print("/api/user/auth 驗證")
     cursor, conn = get_cursor()
     try:
+        print("/api/user/auth 驗證")
+        if authorization == "null": 
+            print("未登入")
+            return JSONResponse(status_code=400, content={"data": "null", "message":"No JWT checked from backend."})   
+
         token = authorization.split()[1]
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email = payload.get("sub")
@@ -95,17 +96,17 @@ async def get_user_info(authorization: str = Header(...)):
 
 # PUT__SIGNIN
 @router.put("/api/user/auth")
-async def signin_user(user: UserSignIn, response: Response):
+async def signin_user(user: UserSignIn):
     cursor, conn = get_cursor()
-
-    if user.email == "" or user.password == "":
-        raise HTTPException(status_code=400, detail={"error": True, "message": "The logged-in user did not enter a username or password."})
     
     try: 
+        if user.email == "" or user.password == "":
+            return JSONResponse(status_code=400, content={"error": True, "message": "The logged-in user did not enter a username or password."})
+
         cursor.execute("SELECT * FROM users WHERE email= %s", (user.email,))
         user_data = cursor.fetchone()
         if not user_data or not check_password(user_data[3], user.password):
-            raise HTTPException(status_code=400, content={"error": True, "message": "The username or password is incorrect."})
+            return JSONResponse(status_code=400, content={"error": True, "message": "The username or password is incorrect."})
         
         jwt_token = create_jwt_token(user.email)
         print(jwt_token)

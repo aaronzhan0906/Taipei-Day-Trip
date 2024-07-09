@@ -29,23 +29,24 @@ class OrderDetail(BaseModel):
 # post #
 @router.post("/api/orders")
 async def post_order(order_detail: OrderDetail, authorization: str = Header(...)):
-    if authorization == "null": 
-        raise HTTPException(status_code=403, detail={"error": True, "message": "Not logged in."})
-    
-    phone_pattern = re.compile(r'^[0-9]{10}$')
-    if not phone_pattern.match(order_detail.order.contact["phone"]):
-        raise HTTPException(status_code=400, detail={"error": True, "message": "訂單建立失敗，手機號碼格式錯誤"})
-    
-    email_pattern = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-    if not email_pattern.match(order_detail.order.contact["email"]):
-        raise HTTPException(status_code=400, detail={"error": True, "message": "訂單建立失敗，電子信箱格式錯誤"})
+    cursor, conn = get_cursor() 
 
-    # delete booking from jwt
-    token = authorization.split()[1]
-    new_token = remove_booking_from_jwt(token)
+    try:
+        if authorization == "null": 
+            return JSONResponse(status_code=403, content={"error": True, "message": "Not logged in."})
+    
+        phone_pattern = re.compile(r'^[0-9]{10}$')
+        if not phone_pattern.match(order_detail.order.contact["phone"]):
+            return JSONResponse(status_code=400, content={"error": True, "message": "訂單建立失敗，手機號碼格式錯誤"})
+        
+        email_pattern = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+        if not email_pattern.match(order_detail.order.contact["email"]):
+            return JSONResponse(status_code=400, content={"error": True, "message": "訂單建立失敗，電子信箱格式錯誤"})
 
-    try: 
-        cursor, conn = get_cursor() 
+        # delete booking from jwt
+        token = authorization.split()[1]
+        new_token = remove_booking_from_jwt(token)
+
         user_info_response = await get_user_info(authorization)
         user_info = json.loads(user_info_response.body)["data"]
 

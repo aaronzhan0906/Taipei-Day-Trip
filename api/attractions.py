@@ -70,6 +70,39 @@ class AttractionModel:
 
 
 
+# Controller
+router = APIRouter()
+
+@router.get("/api/attractions")
+async def attractions(page: int = Query(0, ge=0), keyword: str = Query(None)):
+    try:
+        attractions_tuple, total_count, limit = AttractionModel.get_attractions_with_count(page, keyword)
+        
+        attractions_list = [AttractionView.attraction_to_dict(attraction) for attraction in attractions_tuple]
+        next_page = page + 1 if total_count > (page + 1) * limit else None
+        
+        return AttractionView.attractions_response(next_page, attractions_list)
+    
+    except Exception as exception:
+        return AttractionView.error_response(str(exception), 500)
+
+@router.get("/api/attraction/{attractionId}")
+async def attraction(attractionId: int):
+    try:
+        attraction = AttractionModel.get_attraction_by_id(attractionId)
+
+        if attraction:
+            attraction_dict = AttractionView.attraction_to_dict(attraction)
+            return AttractionView.attraction_response(attraction_dict)
+        else:
+            return AttractionView.error_response("Attraction number is incorrect.", 400)
+    
+    except Exception as exception:
+        return AttractionView.error_response(str(exception), 500)
+
+
+
+
 # View
 class AttractionView:
     @staticmethod
@@ -100,36 +133,3 @@ class AttractionView:
     @staticmethod
     def error_response(message, status_code):
         return JSONResponse(content={"error": True, "message": message}, status_code=status_code)
-
-
-
-
-# Controller
-router = APIRouter()
-
-@router.get("/api/attractions")
-async def attractions(page: int = Query(0, ge=0), keyword: str = Query(None)):
-    try:
-        attractions_tuple, total_count, limit = AttractionModel.get_attractions_with_count(page, keyword)
-        
-        attractions_list = [AttractionView.attraction_to_dict(attraction) for attraction in attractions_tuple]
-        next_page = page + 1 if total_count > (page + 1) * limit else None
-        
-        return AttractionView.attractions_response(next_page, attractions_list)
-    
-    except Exception as exception:
-        return AttractionView.error_response(str(exception), 500)
-
-@router.get("/api/attraction/{attractionId}")
-async def attraction(attractionId: int):
-    try:
-        attraction = AttractionModel.get_attraction_by_id(attractionId)
-
-        if attraction:
-            attraction_dict = AttractionView.attraction_to_dict(attraction)
-            return AttractionView.attraction_response(attraction_dict)
-        else:
-            return AttractionView.error_response("Attraction number is incorrect.", 400)
-    
-    except Exception as exception:
-        return AttractionView.error_response(str(exception), 500)

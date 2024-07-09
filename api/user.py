@@ -24,36 +24,41 @@ class UserModel:
 
     @staticmethod
     def create_user(name: str, email: str, password: str):
+        cursor, conn = get_cursor()
         try:
-            cursor, conn = get_cursor()
             hashed_password = UserModel.hash_password(password)
             cursor.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (name, email, hashed_password))
             conn_commit(conn)
-            conn_close(conn)
-        except Exception as exception:
-            conn_close(conn)
-            raise exception
-
-    @staticmethod
-    def get_user_by_email(email: str):
-        try:
-            cursor, conn = get_cursor()
-            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-            conn_close(conn)
             return cursor.fetchone()
         except Exception as exception:
             raise exception
+        finally:
+            conn_close(conn)
+
+    @staticmethod
+    def get_user_by_email(email: str):
+        cursor, conn = get_cursor()
+        try:
+            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+            return cursor.fetchone()
+        except Exception as exception:
+            raise exception
+        finally:
+            conn_close(conn)
+
             
 
     @staticmethod
     def get_user_info(email: str):
+        cursor, conn = get_cursor()
         try:
-            cursor, conn = get_cursor()
             cursor.execute("SELECT user_id, name, email FROM users WHERE email = %s", (email,))
-            conn_close(conn)
             return cursor.fetchone()
         except Exception as exception:
             raise exception
+        finally:
+            conn_close(conn)
+
 
 
     @staticmethod
@@ -77,7 +82,7 @@ class UserView:
         return JSONResponse(status_code=status_code, content={"error": True, "message": message})
 
     @staticmethod
-    def success_response(status_code: int, message: str, data: dict = None, token: str = None):
+    def ok_response(status_code: int, message: str, data: dict = None, token: str = None):
         content = {"ok": True, "message": message}
         if data:
             content["data"] = data
@@ -105,7 +110,7 @@ async def signup_user(user: UserSignUp):
             return UserView.error_response(400, "電子信箱已被註冊")
 
         UserModel.create_user(user.name, user.email, user.password)
-        return UserView.success_response(200, "!!! User signed up successfully !!!")
+        return UserView.ok_response(200, "!!! User signed up successfully !!!")
     except Exception as exception:
         raise HTTPException(status_code=500, detail={"error": True, "message": str(exception)})
 
@@ -126,7 +131,7 @@ async def get_user_info(authorization: str = Header(...)):
                 "name": user_data[1],
                 "email": user_data[2]
             }
-            return UserView.success_response(200, "User is found.", user_info)
+            return UserView.ok_response(200, "User is found.", user_info)
         else:
             return UserView.error_response(400, "User not found.")
     except Exception as exception:
@@ -143,6 +148,6 @@ async def signin_user(user: UserSignIn):
             return UserView.error_response(400, "The username or password is incorrect.")
 
         jwt_token = create_jwt_token(user.email)
-        return UserView.success_response(200, "!!! User signed in successfully !!!", token=jwt_token)
+        return UserView.ok_response(200, "!!! User signed in successfully !!!", token=jwt_token)
     except Exception as exception:
         raise HTTPException(status_code=500, detail={"error": True, "message": str(exception)})

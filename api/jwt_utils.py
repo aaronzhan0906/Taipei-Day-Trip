@@ -46,7 +46,7 @@ def remove_booking_from_jwt(token: str) -> str:
         print(f"JWT Error: {exception}")
         return None
     
-def confirm_same_user_by_jwt(token: str, user_email: str) -> str:
+def confirm_same_user_by_jwt(token: str, user_email: str) -> bool:
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     payload["sub"] = user_email
     return True

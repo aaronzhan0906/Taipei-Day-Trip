@@ -2,8 +2,12 @@ from fastapi import *
 from fastapi.responses import JSONResponse
 from data.database import get_cursor, conn_commit, conn_close
 from api.mrts import MRTModel
+import redis
+import json
 
 # Model
+
+redis_client = redis.Redis(host="localhost", port = 6379, db=0)
 class AttractionModel:
     @staticmethod
     def get_attractions(cursor, limit, offset, filters, params):
@@ -24,10 +28,25 @@ class AttractionModel:
         return cursor.fetchone()[0]
 
     @staticmethod
-    def get_attraction_by_id(cursor, attraction_id):
+    def get_attraction_by_id(attraction_id):
+        cache_key = f"attraction:{attraction_id}"
+        cached_attraction = redis_client.get(cache_key)
+        
+        if cached_attraction:
+            print(cached_attraction)
+            return json.loads(cached_attraction)
+        
+        cursor, conn = get_cursor()
         query = "SELECT * FROM attractions WHERE attraction_id = %s"
         cursor.execute(query, (attraction_id,))
-        return cursor.fetchone()
+        attraction = cursor.fetchone()
+        conn_commit(conn)
+        conn_close(conn)
+
+        if attraction:
+            print("set")
+            redis_client.setex(cache_key, 86400, json.dumps(attraction))
+        return attraction
 
 
 
@@ -55,11 +74,11 @@ class AttractionView:
         return JSONResponse(status_code=200, content={"nextPage": next_page, "data": attractions_list})
 
     @staticmethod
-    def attraction_response(attraction_dict):
-        return JSONResponse(status_code=200,content= {"data": attraction_dict})
+    def attraction_response(status_code, attraction_dict):
+        return JSONResponse(status_code=status_code, content= {"data": attraction_dict})
 
     @staticmethod
-    def error_response(message, status_code):
+    def error_response(status_code, message):
         return JSONResponse(status_code=status_code, content={"error": True, "message": message})
 
 
@@ -104,16 +123,15 @@ async def attractions(page: int = Query(0, ge=0), keyword: str = Query(None)):
 @router.get("/api/attraction/{attractionId}")
 async def attraction(attractionId: int):
     try:
-        cursor, conn = get_cursor()
-        attraction = AttractionModel.get_attraction_by_id(cursor, attractionId)
-        conn_commit(conn)
-        conn_close(conn)
+        print(attractionId)
+        attraction = AttractionModel.get_attraction_by_id(attractionId)
 
         if attraction:
             attraction_dict = AttractionView.attraction_to_dict(attraction)
-            return AttractionView.attraction_response(attraction_dict)
+            return AttractionView.attraction_response(200, attraction_dict)
         else:
             return AttractionView.error_response(400, "Attraction number is incorrect.")
     
     except Exception as exception:
+        print(str(exception))
         return AttractionView.error_response(500, str(exception))

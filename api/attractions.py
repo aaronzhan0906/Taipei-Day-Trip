@@ -3,11 +3,13 @@ from fastapi.responses import JSONResponse
 from data.database import get_cursor, conn_commit, conn_close
 from api.mrts import MRTModel
 import redis
+import os 
 import json
 
 # Model
 
-redis_client = redis.Redis(host="localhost", port = 6379, db=0)
+redis_host = os.getenv("REDIS_HOST", "localhost")
+redis_client = redis.Redis(host=redis_host, port = 6379, db=0)
 class AttractionModel:
     @staticmethod
     def get_attractions(limit, offset, filters, params):

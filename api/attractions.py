@@ -10,22 +10,44 @@ import json
 redis_client = redis.Redis(host="localhost", port = 6379, db=0)
 class AttractionModel:
     @staticmethod
-    def get_attractions(cursor, limit, offset, filters, params):
+    def get_attractions(limit, offset, filters, params):
+        cache_key = f"attractions:{limit}:{offset}:{json.dumps(filters)}:{json.dumps(params)}"
+        cached_data = redis_client.get(cache_key)
+        if cached_data:
+            return json.loads(cached_data)
+        
+        cursor, conn = get_cursor()
         base_query = "SELECT * FROM attractions"
         if filters:
             base_query += " WHERE " + " AND ".join(filters)
         base_query += " LIMIT %s OFFSET %s"
         params.extend([limit, offset])
         cursor.execute(base_query, params)
-        return cursor.fetchall()
+        attractions = cursor.fetchall()
+        conn_commit(conn)
+        conn_close(conn)
+
+        redis_client.setex(cache_key, 259200, json.dumps(attractions))
+        return attractions
 
     @staticmethod
-    def get_total_count(cursor, filters, params):
+    def get_total_count(filters, params):
+        cache_key = f"attractions_count:{json.dumps(filters)}:{json.dumps(params)}"
+        cached_count = redis_client.get(cache_key)
+        if cached_count:
+            return int(cached_count)
+
+        cursor, conn = get_cursor()
         total_count_query = "SELECT COUNT(*) FROM attractions"
         if filters:
             total_count_query += " WHERE " + " AND ".join(filters)
         cursor.execute(total_count_query, params)
-        return cursor.fetchone()[0]
+        count = cursor.fetchone()[0]
+        conn_commit(conn)
+        conn_close(conn)
+
+        redis_client.setex(cache_key, 259200, str(count))
+        return count
 
     @staticmethod
     def get_attraction_by_id(attraction_id):
@@ -33,7 +55,6 @@ class AttractionModel:
         cached_attraction = redis_client.get(cache_key)
         
         if cached_attraction:
-            print(cached_attraction)
             return json.loads(cached_attraction)
         
         cursor, conn = get_cursor()
@@ -44,8 +65,7 @@ class AttractionModel:
         conn_close(conn)
 
         if attraction:
-            print("set")
-            redis_client.setex(cache_key, 86400, json.dumps(attraction))
+            redis_client.setex(cache_key, 259200, json.dumps(attraction))
         return attraction
 
 
@@ -89,7 +109,6 @@ router = APIRouter()
 @router.get("/api/attractions")
 async def attractions(page: int = Query(0, ge=0), keyword: str = Query(None)):
     try:
-        cursor, conn = get_cursor()
         limit = 12
         offset = page * limit
         filters = []
@@ -105,17 +124,15 @@ async def attractions(page: int = Query(0, ge=0), keyword: str = Query(None)):
                 filters.append("name LIKE %s")
                 params.append(f"%{keyword}%")
         
-        total_count = AttractionModel.get_total_count(cursor, filters, params)
-        attractions_tuple = AttractionModel.get_attractions(cursor, limit, offset, filters, params)
+        total_count = AttractionModel.get_total_count(filters, params)
+        attractions_tuple = AttractionModel.get_attractions(limit, offset, filters, params)
         attractions_list = [AttractionView.attraction_to_dict(attraction) for attraction in attractions_tuple]
         next_page = page + 1 if total_count >= offset + limit else None
-
-        conn_commit(conn)
-        conn_close(conn)
 
         return AttractionView.attractions_response(next_page, attractions_list)
     
     except Exception as exception:
+        print(exception)
         return AttractionView.error_response(500, str(exception))
     
 
@@ -133,5 +150,4 @@ async def attraction(attractionId: int):
             return AttractionView.error_response(400, "Attraction number is incorrect.")
     
     except Exception as exception:
-        print(str(exception))
         return AttractionView.error_response(500, str(exception))

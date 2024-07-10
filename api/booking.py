@@ -83,11 +83,15 @@ class BookingInfo(BaseModel):
     time: str
     price: int
 
-
 def validate_booking(booking: BookingInfo) -> List[str]:
+    time_slot_prices = {"morning": 2000, "afternoon": 2500}
     errors = []
-    if booking.time not in ["morning", "afternoon"]:
+    
+    if booking.time not in time_slot_prices:
         errors.append("Invalid time slot")
+    elif booking.price != time_slot_prices[booking.time]:
+        errors.append(f"Incorrect price for {booking.time} slot")
+        
     return errors
 
 
@@ -124,7 +128,7 @@ async def post_order(authorization: str = Header(...), booking: BookingInfo = No
         return BookingView.ok_response(200, token=new_token)
 
     except ValidationError as ve:
-        error_messages = "; ".join([f"{error['loc'][0]}: {error['msg']}" for error in ve.errors()])
+        error_messages = "; ".join(error["msg"] for error in ve.errors())
         return BookingView.error_response(400, f"建立失敗，輸入不正確: {error_messages}")
 
     except Exception as exception:

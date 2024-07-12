@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Header, Cookie, Response
 from pydantic import BaseModel
-from api.jwt_utils import create_jwt_token, SECRET_KEY, ALGORITHM
+from api.jwt_utils import create_jwt_token,create_refresh_token, SECRET_KEY, ALGORITHM
 from api.userModel import UserModel
 from api.userView import UserView
 import jwt
+from datetime import datetime, timedelta, timezone
 
 
 
@@ -19,6 +20,9 @@ class UserSignUp(BaseModel):
 class UserSignIn(BaseModel):
     email: str
     password: str
+
+class RefreshToken(BaseModel):
+    refresh_token: str
 
 @router.post("/api/user")
 async def signup_user(user: UserSignUp):
@@ -59,7 +63,7 @@ async def get_user_info(authorization: str = Header(...)):
         return UserView.error_response(500, str(exception))
 
 @router.put("/api/user/auth")
-async def signin_user(user: UserSignIn):
+async def signin_user(user: UserSignIn, response: Response):
     if not all([user.email, user.password]):
         return UserView.error_response(400, "The logged-in user did not enter a username or password.")
     try:
@@ -68,6 +72,33 @@ async def signin_user(user: UserSignIn):
             return UserView.error_response(400, "The username or password is incorrect.")
 
         jwt_token = create_jwt_token(user.email)
+
+        refresh_token = create_refresh_token(user.email)
+        expires_at = datetime.now(tz=timezone.utc) + timedelta(days=30)
+        UserModel.save_refresh_token(user_data[0], refresh_token, expires_at)
+
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly = True,
+            max_age = 30 * 24 * 60 * 60,
+            # sameSite="strict"
+            # secure=True
+        )
+
         return UserView.ok_response(200, message="!!! User signed in successfully !!!", token=jwt_token)
     except Exception as exception:
+        print(exception)
         return UserView.error_response(500, str(exception))
+    
+@router.post("api/user/logout")
+async def logout(response:Response, refresh_token: str = Cookie(None)):
+    if refresh_token:
+        try:
+            UserModel.revoke_refresh_token(refresh_token)
+        except Exception as exception:
+            return UserView.error_response(500, str(exception))
+        
+    response.delete_cookie(key="refresh_token", httponly=True, samesite="strict")
+    
+    return UserView.ok_response(200, message="Logged out successfully")

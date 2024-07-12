@@ -6,15 +6,27 @@ router = APIRouter()
 
 SECRET_KEY = "secreeeeet"
 ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_HOURS = 15/60  
+REFRESH_TOKEN_EXPIRE_DAY = 30
 
 def create_jwt_token(email: str) -> str:
     payload = {
         "sub": email,
-        "exp": datetime.now(tz=timezone.utc) + timedelta(hours=168)
+        "exp": datetime.now(tz=timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS),
+        "type": "access"
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
 
+def create_refresh_token(email: str) -> str:
+    expire_delta = timedelta(days=REFRESH_TOKEN_EXPIRE_DAY)
+    payload = {
+        "sub": email,
+        "exp": datetime.now(tz=timezone.utc) + expire_delta,
+        "type": "refresh"
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
 
 def update_jwt_payload(token: str, new_data: dict) -> str:
     try:

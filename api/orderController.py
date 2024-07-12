@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Header
 from pydantic import BaseModel
 import json
-from api.user import get_user_info
+from api.userModel import UserModel
 from api.jwt_utils import remove_booking_from_jwt, confirm_same_user_by_jwt
 from api.orderModel import OrderModel
 from api.orderView import OrderView
@@ -35,7 +35,7 @@ async def post_order(order_detail: OrderDetail, authorization: str = Header(...)
         token = authorization.split()[1]
         new_token = remove_booking_from_jwt(token)
 
-        user_info_response = await get_user_info(authorization)
+        user_info_response = await UserModel.get_user_info(authorization)
         user_info = json.loads(user_info_response.body)["data"]
 
         order_number = OrderModel.generate_order_number()

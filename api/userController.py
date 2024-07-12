@@ -1,70 +1,16 @@
 from fastapi import APIRouter, Header
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from data.database import get_cursor, conn_commit, conn_close
 from api.jwt_utils import create_jwt_token, SECRET_KEY, ALGORITHM
+from api.userModel import UserModel
+from api.userView import UserView
 import jwt
-import bcrypt 
-import re
-
-
-# Model
-class UserModel:
-    email_pattern = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-
-    @staticmethod
-    def hash_password(password: str) -> str:
-        salt = bcrypt.gensalt(rounds=12)
-        hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
-        return hashed.decode("utf-8")
-
-    @staticmethod
-    def check_password(hashed_password: str, password: str) -> bool:
-        return bcrypt.checkpw(password.encode("utf-8"), hashed_password.encode("utf-8"))
-
-    @staticmethod
-    def create_user(name: str, email: str, password: str):
-        cursor, conn = get_cursor()
-        try:
-            hashed_password = UserModel.hash_password(password)
-            cursor.execute("INSERT INTO users (name, email, password) VALUES (%s, %s, %s)", (name, email, hashed_password))
-            conn_commit(conn)
-            return cursor.fetchone()
-        except Exception as exception:
-            raise exception
-        finally:
-            conn_close(conn)
-
-    @staticmethod
-    def get_user_by_email(email: str):
-        cursor, conn = get_cursor()
-        try:
-            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
-            return cursor.fetchone()
-        except Exception as exception:
-            raise exception
-        finally:
-            conn_close(conn)
-
-    @staticmethod
-    def get_user_info(email: str):
-        cursor, conn = get_cursor()
-        try:
-            cursor.execute("SELECT user_id, name, email FROM users WHERE email = %s", (email,))
-            return cursor.fetchone()
-        except Exception as exception:
-            raise exception
-        finally:
-            conn_close(conn)
 
 
 
-    @staticmethod
-    def is_valid_email(email: str) -> bool:
-        return bool(UserModel.email_pattern.match(email))
 
+# Controller
+router = APIRouter()
 
-# View
 class UserSignUp(BaseModel):
     name: str
     email: str
@@ -73,27 +19,6 @@ class UserSignUp(BaseModel):
 class UserSignIn(BaseModel):
     email: str
     password: str
-
-class UserView:
-    @staticmethod
-    def error_response(status_code: int, message: str):
-        return JSONResponse(status_code=status_code, content={"error": True, "message": message})
-
-    @staticmethod
-    def ok_response(status_code: int, message: str, data: dict = None, token: str = None):
-        content = {"ok": True, "message": message}
-        if data:
-            content["data"] = data
-        if token:
-            content["token"] = token
-        headers = {"Authorization": f"Bearer {token}"} if token else None
-        return JSONResponse(status_code=status_code, content=content, headers=headers)
-
-
-
-
-# Controller
-router = APIRouter()
 
 @router.post("/api/user")
 async def signup_user(user: UserSignUp):

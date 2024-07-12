@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ValidationError 
 from typing import List
 from datetime import date
-from api.user import UserModel
+from api.userModel import UserModel
 from api.jwt_utils import update_jwt_payload, SECRET_KEY, ALGORITHM
 from data.database import get_cursor, conn_close
 import jwt

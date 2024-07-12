@@ -1,7 +1,7 @@
 from fastapi import *
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from api import attractions, user, booking, jwt_utils, orderController, mrts
+from api import attractions, booking, jwt_utils, orderController, mrts, userController
 
 
 
@@ -9,7 +9,7 @@ from api import attractions, user, booking, jwt_utils, orderController, mrts
 app=FastAPI()
 app.include_router(attractions.router)
 app.include_router(mrts.router)
-app.include_router(user.router)
+app.include_router(userController.router)
 app.include_router(booking.router)
 app.include_router(orderController.router)
 app.include_router(jwt_utils.router)

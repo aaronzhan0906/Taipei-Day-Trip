@@ -76,7 +76,6 @@ async def signin_user(user: UserSignIn, response: Response):
         refresh_token = create_refresh_token(user.email)
         expires_at = datetime.now(tz=timezone.utc) + timedelta(days=30)
         UserModel.save_refresh_token(user_data[0], refresh_token, expires_at)
-
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
@@ -85,8 +84,19 @@ async def signin_user(user: UserSignIn, response: Response):
             samesite="strict",
             secure=True
         )
-
-        return UserView.ok_response(200, message="!!! User signed in successfully !!!", token=jwt_token)
+        
+        response = UserView.ok_response(200, message="!!! User signed in successfully !!!", token=jwt_token)
+        
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            max_age=30 * 24 * 60 * 60,
+            samesite="strict",
+            secure=True
+        )
+        
+        return response
     except Exception as exception:
         print(exception)
         return UserView.error_response(500, str(exception))

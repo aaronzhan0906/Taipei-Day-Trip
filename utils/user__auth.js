@@ -3,7 +3,6 @@ let isSignIn = true;
 
 export const userFormSignIn = async (elements) => {
     const { userForm, user ,overlay,formResult, userBox } = elements;
-    console.log("～～～ 嘗試登入 ～～～")
     const formData = new FormData(userForm);
     const data = {
         email: formData.get("email"),
@@ -126,6 +125,7 @@ export const detectJwt = async (elements) => {
 // userSignOut //
 export const userSignOut = async (elements) => {
     const { navigationRightSignIn, user, overlay } = elements;
+
     localStorage.removeItem("jwt");
     localStorage.removeItem("signInName");
     navigationRightSignIn.textContent = "登入/註冊";

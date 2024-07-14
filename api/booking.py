@@ -4,7 +4,7 @@ from pydantic import BaseModel, ValidationError
 from typing import List
 from datetime import date
 from api.userModel import UserModel
-from api.jwt_utils import update_jwt_payload, SECRET_KEY, ALGORITHM
+from api.JWTHandler import JWTHandler
 from data.database import get_cursor, conn_close
 import jwt
 
@@ -13,7 +13,7 @@ import jwt
 class BookingModel:
     @staticmethod
     def get_booking_from_token(token):
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, JWTHandler.SECRET_KEY, algorithms=[JWTHandler.ALGORITHM])
         return payload.get("booking")
 
     @staticmethod
@@ -53,7 +53,7 @@ class BookingModel:
 
     @staticmethod
     def update_booking_token(token, booking):
-        return update_jwt_payload(token, {"booking": booking})
+        return JWTHandler.update_jwt_payload(token, {"booking": booking})
 
 
 class BookingView:

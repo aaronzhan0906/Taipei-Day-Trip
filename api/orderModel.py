@@ -155,3 +155,22 @@ class OrderModel:
             return cursor.fetchone()
         finally:
             conn_close(conn)
+
+
+    @staticmethod
+    def get_user_info_in_dict(email: str) -> dict:
+        cursor, conn = get_cursor()
+        try:
+            cursor.execute("SELECT user_id, name, email FROM users WHERE email = %s", (email,))
+            result = cursor.fetchone()
+            if result:
+                return {
+                    "user_id": result[0],
+                    "name": result[1],
+                    "email": result[2]
+                }
+            return None
+        except Exception as exception:
+            raise exception
+        finally:
+            conn_close(conn)

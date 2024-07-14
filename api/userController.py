@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Header, Cookie, Response
 from pydantic import BaseModel
-from api.jwt_utils import create_jwt_token,create_refresh_token, SECRET_KEY, ALGORITHM
+from api.JWTHandler import JWTHandler
 from api.userModel import UserModel
 from api.userView import UserView
 import jwt
@@ -46,7 +46,7 @@ async def get_user_info(authorization: str = Header(...)):
         return UserView.error_response(400, "No JWT checked from backend.")
     try:
         token = authorization.split()[1]
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, JWTHandler.SECRET_KEY, algorithms=[JWTHandler.ALGORITHM])
         email = payload.get("sub")
 
         user_data = UserModel.get_user_info(email)
@@ -60,6 +60,7 @@ async def get_user_info(authorization: str = Header(...)):
         else:
             return UserView.error_response(400, "User not found.")
     except Exception as exception:
+        print(exception)
         return UserView.error_response(500, str(exception))
 
 @router.put("/api/user/auth")
@@ -71,9 +72,9 @@ async def signin_user(user: UserSignIn, response: Response):
         if not user_data or not UserModel.check_password(user_data[3], user.password):
             return UserView.error_response(400, "The username or password is incorrect.")
 
-        jwt_token = create_jwt_token(user.email)
+        jwt_token = JWTHandler.create_jwt_token(user.email)
 
-        refresh_token = create_refresh_token(user.email)
+        refresh_token = JWTHandler.create_refresh_token(user.email)
         expires_at = datetime.now(tz=timezone.utc) + timedelta(days=30)
         UserModel.save_refresh_token(user_data[0], refresh_token, expires_at)
 

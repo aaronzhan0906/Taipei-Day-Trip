@@ -126,27 +126,43 @@ export const detectJwt = async (elements) => {
 export const userSignOut = async (elements) => {
     const { navigationRightSignIn, user, overlay } = elements;
 
-    localStorage.removeItem("jwt");
-    localStorage.removeItem("signInName");
-    navigationRightSignIn.textContent = "登入/註冊";
-    user.style.display = "none";
-    overlay.style.display = "none";
-    
-    overlay.addEventListener("click", () => {
-        initialSignUp(elements);
-    })
+    try {
+        const response = await fetch("/api/user/sign_out", {
+            method: "POST",
+            credentials: "include"  
+        });
 
-    if (window.location.pathname === '/booking') {
-        window.location.reload();
-    } 
+        if (!response.ok) {
+            throw new Error('登出失敗');
+        }
 
+        localStorage.removeItem("jwt");
+        localStorage.removeItem("signInName");
 
-    navigationRightSignIn.addEventListener("click", () => {
-        user.style.display = "block";
-        overlay.style.display = "block";
-    });
+        // 更新 UI
+        navigationRightSignIn.textContent = "登入/註冊";
+        user.style.display = "none";
+        overlay.style.display = "none";
 
-    clearFormFields(elements);
+        overlay.addEventListener("click", () => {
+            initialSignUp(elements);
+        });
+
+        if (window.location.pathname === '/booking') {
+            window.location.reload();
+        }
+
+        navigationRightSignIn.addEventListener("click", () => {
+            user.style.display = "block";
+            overlay.style.display = "block";
+        });
+
+        clearFormFields(elements);
+
+        console.log("登出成功");
+    } catch (error) {
+        console.error("登出時發生錯誤:", error);
+    }
 }
 
 

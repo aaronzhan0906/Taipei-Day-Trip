@@ -73,7 +73,6 @@ async def signin_user(user: UserSignIn, response: Response):
             return UserView.error_response(400, "The username or password is incorrect.")
 
         jwt_token = JWTHandler.create_jwt_token(user.email)
-
         refresh_token = JWTHandler.create_refresh_token(user.email)
         expires_at = datetime.now(tz=timezone.utc) + timedelta(days=30)
         UserModel.save_refresh_token(user_data[0], refresh_token, expires_at)
@@ -102,14 +101,14 @@ async def signin_user(user: UserSignIn, response: Response):
         print(exception)
         return UserView.error_response(500, str(exception))
     
-@router.post("api/user/logout")
-async def logout(response:Response, refresh_token: str = Cookie(None)):
+@router.post("/api/user/sign_out")
+async def sign_out(response: Response, refresh_token: str = Cookie(None)):
     if refresh_token:
         try:
             UserModel.revoke_refresh_token(refresh_token)
         except Exception as exception:
             return UserView.error_response(500, str(exception))
-        
-    response.delete_cookie(key="refresh_token", httponly=True, samesite="strict")
     
-    return UserView.ok_response(200, message="Logged out successfully")
+    response = UserView.ok_response(200, message="Logged out successfully")
+    response.delete_cookie(key="refresh_token", httponly=True, samesite="strict", secure=True)
+    return response

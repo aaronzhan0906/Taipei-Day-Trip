@@ -1,3 +1,5 @@
 .DS_Store
 cspell.json__pycache__
 *.pyc
+*.pem
+local/

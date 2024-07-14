@@ -62,3 +62,22 @@ def confirm_same_user_by_jwt(token: str, user_email: str) -> bool:
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     payload["sub"] = user_email
     return True
+
+
+def verify_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.PyJWTError:
+        return None
+
+def is_token_expired(token: str) -> bool:
+    try:
+        jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return False
+    except jwt.ExpiredSignatureError:
+        return True
+    except jwt.PyJWTError:
+        return True

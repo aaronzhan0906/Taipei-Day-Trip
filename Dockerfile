@@ -3,6 +3,8 @@ FROM python:3-slim
 WORKDIR /app
 
 COPY requirements.txt .
+COPY local/certificate.pem /app/local/
+COPY local/private_key.pem /app/local/
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .

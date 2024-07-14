@@ -82,8 +82,8 @@ async def signin_user(user: UserSignIn, response: Response):
             value=refresh_token,
             httponly = True,
             max_age = 30 * 24 * 60 * 60,
-            # sameSite="strict"
-            # secure=True
+            samesite="strict",
+            secure=True
         )
 
         return UserView.ok_response(200, message="!!! User signed in successfully !!!", token=jwt_token)

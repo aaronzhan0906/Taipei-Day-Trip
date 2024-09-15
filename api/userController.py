@@ -4,6 +4,7 @@ from api.jwt_utils import create_jwt_token, SECRET_KEY, ALGORITHM
 from api.userModel import UserModel
 from api.userView import UserView
 import jwt
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
 
 
@@ -40,6 +41,7 @@ async def signup_user(user: UserSignUp):
 async def get_user_info(authorization: str = Header(...)):
     if authorization == "null":
         return UserView.error_response(400, "No JWT checked from backend.")
+    
     try:
         token = authorization.split()[1]
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -55,7 +57,14 @@ async def get_user_info(authorization: str = Header(...)):
             return UserView.ok_response(200, data=user_info, message="User is found.")
         else:
             return UserView.error_response(400, "User not found.")
+    except ExpiredSignatureError:
+        print("[ExpiredSignatureError] Token has expired.")
+        return UserView.error_response(400, "Token has expired.")
+    except InvalidTokenError:
+        print("[InvalidTokenError] Invalid token.")
+        return UserView.error_response(400, "Invalid token.")
     except Exception as exception:
+        print(exception)
         return UserView.error_response(500, str(exception))
 
 @router.put("/api/user/auth")

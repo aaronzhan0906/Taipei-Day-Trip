@@ -14,4 +14,4 @@ ENV DB_PASSWORD=rootroot
 ENV DB_NAME=taipei_attractions
 ENV REDIS_HOST=host.docker.internal
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["app.py"]

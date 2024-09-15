@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 import re
 import shortuuid
 from datetime import datetime
@@ -5,11 +7,22 @@ import aiohttp
 import asyncio
 from data.database import get_cursor, conn_commit, conn_close
 
-class OrderModel:
-    TAPPAY_SANDBOX_URL = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
-    TAPPAY_PARTNER_KEY = "partner_p1becyZviOfzZZHeDntgb8WpTLd8UsRYdp1ikOk0y7AqxiwUyQWLiguI"  
-    TAPPAY_MERCHANT_ID = "aaronzhan0906_GP_POS_3"
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(current_dir)
+dotenv_path = os.path.join(root_dir, ".env")
 
+require_env_vars = ["TAPPAY_SANDBOX_URL", "TAPPAY_PARTNER_KEY", "TAPPAY_MERCHANT_ID"]
+for var in require_env_vars:
+    if os.getenv(var) is None:
+        raise ValueError(f"ENV {var} is not set")
+    
+TAPPAY_SANDBOX_URL = os.getenv("TAPPAY_SANDBOX_URL")
+TAPPAY_PARTNER_KEY = os.getenv("TAPPAY_PARTNER_KEY")
+TAPPAY_MERCHANT_ID = os.getenv("TAPPAY_MERCHANT_ID")
+
+load_dotenv(dotenv_path)
+
+class OrderModel:
     @staticmethod
     def validate_phone(phone):
         phone_pattern = re.compile(r'^[0-9]{10}$')
@@ -30,12 +43,12 @@ class OrderModel:
     async def process_tappay_payment(order_detail, order_number):
         headers = {
             "Content-Type": "application/json",
-            "x-api-key": OrderModel.TAPPAY_PARTNER_KEY
+            "x-api-key": TAPPAY_PARTNER_KEY
         }
         payload = {
             "prime": order_detail.prime,
-            "partner_key": OrderModel.TAPPAY_PARTNER_KEY,
-            "merchant_id": OrderModel.TAPPAY_MERCHANT_ID,
+            "partner_key": TAPPAY_PARTNER_KEY,
+            "merchant_id": TAPPAY_MERCHANT_ID,
             "details": "Taipei Day Trip Order",
             "amount": order_detail.order.price,  
             "order_number": order_number,
@@ -49,7 +62,7 @@ class OrderModel:
 
         async with aiohttp.ClientSession() as session:
             try:
-                async with session.post(OrderModel.TAPPAY_SANDBOX_URL, json=payload, headers=headers) as response:
+                async with session.post(TAPPAY_SANDBOX_URL, json=payload, headers=headers) as response:
                     if response.status == 200:
                         return await response.json()
                     else:
@@ -153,5 +166,24 @@ class OrderModel:
             """
             cursor.execute(query, (order_number,))
             return cursor.fetchone()
+        finally:
+            conn_close(conn)
+
+
+    @staticmethod
+    def get_user_info_in_dict(email: str) -> dict:
+        cursor, conn = get_cursor()
+        try:
+            cursor.execute("SELECT user_id, name, email FROM users WHERE email = %s", (email,))
+            result = cursor.fetchone()
+            if result:
+                return {
+                    "user_id": result[0],
+                    "name": result[1],
+                    "email": result[2]
+                }
+            return None
+        except Exception as exception:
+            raise exception
         finally:
             conn_close(conn)

@@ -1,5 +1,4 @@
 from data.database import get_cursor, conn_commit, conn_close
-
 import bcrypt 
 import re
 
@@ -53,10 +52,48 @@ class UserModel:
         finally:
             conn_close(conn)
 
-
-
     @staticmethod
     def is_valid_email(email: str) -> bool:
         return bool(UserModel.email_pattern.match(email))
 
 
+
+
+    # @staticmethod
+    # def save_refresh_token(user_id:int, refresh_token:str, expires_at:datetime):
+    #     cursor, conn = get_cursor()
+    #     try:
+    #         cursor.execute("INSERT INTO refresh_tokens(user_id, token, expires_at) VALUES(%s, %s, %s)",(user_id, refresh_token, expires_at))
+    #         conn_commit(conn)
+    #     except Exception as exception:
+    #         raise exception
+    #     finally:
+    #         conn_close(conn)
+
+    # @staticmethod
+    # def get_user_by_refresh_token(refresh_token:str):
+    #     cursor, conn = get_cursor()
+    #     try:
+    #         cursor.execute("""
+    #             SELECT * FROM users
+    #             JOIN refresh_tokens ON users.user_id = refresh_tokens.user_id
+    #             WHERE refresh_tokens.token = %s
+    #             AND refresh_tokens.expires_at > NOW()
+    #             AND refresh_tokens.is_revoked = FALSE
+    #         """,(refresh_token,))
+    #         conn_commit(conn)
+    #     except Exception as exception:
+    #         raise exception
+    #     finally:
+    #         conn_close(conn)
+
+    # @staticmethod
+    # def revoke_refresh_token(refresh_token:str):
+    #     cursor, conn = get_cursor()
+    #     try:
+    #         cursor.execute("UPDATE refresh_tokens SET is_revoked = TRUE WHERE token = %s",(refresh_token,))
+    #         conn_commit(conn)
+    #     except Exception as exception:
+    #         raise exception
+    #     finally:
+    #         conn_close(conn)

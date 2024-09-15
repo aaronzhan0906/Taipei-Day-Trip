@@ -9,7 +9,7 @@ from data.database import get_cursor, conn_close
 import jwt
 
 
-# model
+##################### Model #####################
 class BookingModel:
     @staticmethod
     def get_booking_from_token(token):
@@ -26,8 +26,6 @@ class BookingModel:
         finally:
             conn_close(conn)
 
-
-    
     @staticmethod
     def create_booking_detail(attraction, booking):
         return {
@@ -54,8 +52,6 @@ class BookingModel:
     @staticmethod
     def update_booking_token(token, booking):
         return update_jwt_payload(token, {"booking": booking})
-
-
 class BookingView:
     @staticmethod
     def error_response(status_code, message):
@@ -72,9 +68,7 @@ class BookingView:
         return JSONResponse(status_code=status_code, content=content, headers=headers)
 
 
-
-
-# controller
+##################### CONTROLLER #####################
 
 router = APIRouter()
 class BookingInfo(BaseModel):

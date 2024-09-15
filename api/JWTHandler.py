@@ -29,17 +29,6 @@ class JWTHandler:
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
         return token
 
-    # @staticmethod
-    # def create_refresh_token(email: str) -> str:
-    #     expire_delta = timedelta(days=REFRESH_TOKEN_EXPIRE_DAY)
-    #     payload = {
-    #         "sub": email,
-    #         "exp": datetime.now(tz=timezone.utc) + expire_delta,
-    #         "type": "refresh"
-    #     }
-    #     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-    #     return token
-
     @staticmethod
     def update_jwt_payload(token: str, new_data: dict) -> str:
         try:

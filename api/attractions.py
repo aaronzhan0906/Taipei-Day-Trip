@@ -6,7 +6,7 @@ import redis
 import os 
 import json
 
-# Model
+##################### Model #####################
 
 redis_host = os.getenv("REDIS_HOST", "localhost")
 redis_client = redis.Redis(host=redis_host, port = 6379, db=0)
@@ -72,7 +72,7 @@ class AttractionModel:
 
 
 
-# View
+##################### View #####################
 class AttractionView:
     @staticmethod
     def attraction_to_dict(attraction):
@@ -105,7 +105,7 @@ class AttractionView:
 
 
 
-# Controller
+##################### Contorller #####################
 router = APIRouter()
 
 @router.get("/api/attractions")
@@ -142,7 +142,6 @@ async def attractions(page: int = Query(0, ge=0), keyword: str = Query(None)):
 @router.get("/api/attraction/{attractionId}")
 async def attraction(attractionId: int):
     try:
-        print(attractionId)
         attraction = AttractionModel.get_attraction_by_id(attractionId)
 
         if attraction:

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from data.database import get_cursor, conn_commit, conn_close
 
-# Model
+##################### Model #####################
 class MRTModel:
     @staticmethod
     def get_sorted_mrts():
@@ -17,10 +17,7 @@ class MRTModel:
         finally:
             conn_close(conn)
 
-
-
-
-# View
+##################### View #####################
 class MRTView:
     @staticmethod
     def ok_response(status_code, data=None):
@@ -30,10 +27,7 @@ class MRTView:
     def error_response(status_code: int, message: str):
         return JSONResponse(status_code=status_code, content={"error": True, "message": message})
 
-
-
-
-# Controller
+##################### CONTROLLER #####################
 router = APIRouter()
 
 @router.get("/api/mrts")

@@ -19,7 +19,7 @@ CCV: 123
 
 
 
-#### Features and Techniques
+## Features and Techniques
 
 - Member system : **JWT token-based** authentication
 - Online shopping : Shopping cart system, Infinite scroll, lazy loading, and Carousel Slider

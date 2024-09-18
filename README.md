@@ -44,7 +44,7 @@ CCV: 123
 - EC2
 - Route 53
 
-#### Containerize
+#### Containerization
 - Docker
 - Docker-compose
 

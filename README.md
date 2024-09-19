@@ -25,8 +25,8 @@ CCV: 123
 - Online shopping : Shopping cart system, Infinite scroll, lazy loading, and Carousel Slider
 - Cross-device compatibility: **Responsive Web Design** (**RWD**) using vanilla **JavaScript**, **CSS**, and **HTML**
 - Online payments: Integration of **TapPay SDK** third-party payment service
-- Data management: Normalized **MySQL** database in **3NF** with optimized queries using indexes and connection pooling
-- Cache: **Redis** caching for recently used image links
+- Data management: Normalized **MySQL** database in **3NF** with optimized queries using indexes and connection pooling.
+- Cache: **Redis** caching for recently accessed attraction data, improving loading speed.
 - Frontend-backend communication: **RESTful API** implementation
 - Web server: **Nginx** for reverse proxy and **SSL** services
 - Cloud deployment: **AWS EC2** instances managed with **Docker-Compose**

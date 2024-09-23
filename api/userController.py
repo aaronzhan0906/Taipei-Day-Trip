@@ -35,6 +35,7 @@ async def signup_user(user: UserSignUp):
         UserModel.create_user(user.name, user.email, user.password)
         return UserView.ok_response(200, message="!!! User signed up successfully !!!")
     except Exception as exception:
+        print(f"[signup_user] error {exception}")
         return UserView.error_response(500, str(exception))
 
 @router.get("/api/user/auth")
@@ -45,18 +46,14 @@ async def get_user_info(authorization: str = Header(...)):
     try:
         token = authorization.split()[1]
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
 
-        user_data = UserModel.get_user_info(email)
-        if user_data:
-            user_info = {
-                "user_id": user_data[0],
-                "name": user_data[1],
-                "email": user_data[2]
-            }
-            return UserView.ok_response(200, data=user_info, message="User is found.")
-        else:
-            return UserView.error_response(400, "User not found.")
+        user_info = {
+            "user_id": payload.get("user_id"),
+            "name": payload.get("name"),
+            "email": payload.get("sub")
+        }
+
+        return UserView.ok_response(200, data=user_info, message="User is found.")
     except ExpiredSignatureError:
         print("[ExpiredSignatureError] Token has expired.")
         return UserView.error_response(400, "Token has expired.")
@@ -64,7 +61,7 @@ async def get_user_info(authorization: str = Header(...)):
         print("[InvalidTokenError] Invalid token.")
         return UserView.error_response(400, "Invalid token.")
     except Exception as exception:
-        print(exception)
+        print(f"[get_user_info] error {exception}")
         return UserView.error_response(500, str(exception))
 
 @router.put("/api/user/auth")
@@ -75,8 +72,12 @@ async def signin_user(user: UserSignIn):
         user_data = UserModel.get_user_by_email(user.email)
         if not user_data or not UserModel.check_password(user_data[3], user.password):
             return UserView.error_response(400, "The username or password is incorrect.")
-
-        jwt_token = JWTHandler.create_jwt_token(user.email)
+        
+        email = user_data[2]
+        name = user_data[1]
+        user_id = user_data[0]
+        jwt_token = JWTHandler.create_jwt_token(email, str(user_id), name)
         return UserView.ok_response(200, message="!!! User signed in successfully !!!", token=jwt_token)
     except Exception as exception:
+        print(f"[signin_user] error {exception}")
         return UserView.error_response(500, str(exception))

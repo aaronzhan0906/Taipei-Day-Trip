@@ -20,7 +20,7 @@ db_pool = MySQLConnectionPool(
     pool_name="mysql_pool",
     pool_size=30,
     pool_reset_session=True, # Resets the session state when a connection is taken from the pool
-    **db_config # # Database configuration passed as keyword arguments
+    **db_config # Database configuration passed as keyword arguments
 )
 
 print("Connection pool created.")

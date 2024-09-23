@@ -87,10 +87,10 @@ export const bookingInAttractionPage = () => {
             });
             
             if (response.ok) {
-                const newToken = response.headers.get("Authorization");
-                if (newToken) {
-                    localStorage.setItem("jwt", newToken);
-                }
+                // const newToken = response.headers.get("Authorization");
+                // if (newToken) {
+                //     localStorage.setItem("jwt", newToken);
+                // }
                 window.location.href = "/booking";
                 console.log("預定成功");
             } else {

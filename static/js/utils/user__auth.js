@@ -3,7 +3,6 @@ let isSignIn = true;
 
 export const userFormSignIn = async (elements) => {
     const { userForm, user ,overlay,formResult, userBox } = elements;
-    console.log("～～～ 嘗試登入 ～～～")
     const formData = new FormData(userForm);
     const data = {
         email: formData.get("email"),
@@ -38,14 +37,12 @@ export const userFormSignIn = async (elements) => {
 
         const responseData = await response.json();
         if (response.ok) {
-            console.log(responseData.message);
             const jwt = response.headers.get("Authorization");
             localStorage.setItem("jwt",jwt);
             detectJwt(elements);
             user.style.display = "none";
             overlay.style.display = "none";
         } else {
-            console.log(responseData.message);
             const userBox = document.querySelector(".user__box");
             const formResult = document.querySelector(".form__result");
             formResult.className = "form__result";
@@ -74,7 +71,6 @@ export const detectJwt = async (elements) => {
     const storedJwt = localStorage.getItem("jwt");
   
     if (!storedJwt) {
-        console.log("<<< No JWT in localStorage. >>>");
         setLoggedOutState();
         return;
     }
@@ -157,7 +153,6 @@ export const userSignOut = async (elements) => {
 // userFormSignUp //
 export const userFormSignUp = async (elements) => {
     const { userForm, userBox, formResult,user, overlay } = elements;
-    console.log("＠＠＠ 嘗試註冊 ＠＠＠")
 
     const formData = new FormData(userForm);
     const data = {
@@ -201,7 +196,6 @@ export const userFormSignUp = async (elements) => {
                 user.style.display = "block";
                 overlay.style.display = "block";
 
-                console.log(responseData.message);
             } 
         } else {
             const responseData = await response.json();
@@ -218,7 +212,6 @@ export const userFormSignUp = async (elements) => {
                 userBox.style.height = "356px";
                 user.style.display = "block";
                 overlay.style.display = "block";
-                console.log(responseData.message);
             }
         }
     } catch (error) {

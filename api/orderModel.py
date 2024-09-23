@@ -187,3 +187,25 @@ class OrderModel:
             raise exception
         finally:
             conn_close(conn)
+
+
+    def clear_cart(user_id):
+        cursor, conn = get_cursor()
+        try: 
+            query = """
+            UPDATE carts
+            SET attraction_id = NULL,
+                cart_date = NULL,
+                cart_time = NULL,
+                cart_price = NULL
+            WHERE user_id = %s
+            """
+            cursor.execute(query, (user_id,))
+            conn_commit(conn)
+
+        except Exception as e:
+            conn.rollback()
+            print(f"[clear_cart] error {e}")
+            return None  
+        finally:
+            conn_close(conn)

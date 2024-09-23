@@ -120,11 +120,10 @@ export const deleteBooking = async () => {
                     Authorization: `${localStorage.getItem("jwt")}`
                 }
             });
-            console.log(deleteRequest)
-
+                    
             if (deleteRequest.ok) {
-                const noBookingToken = deleteRequest.headers.get("Authorization");
-                localStorage.setItem("jwt", noBookingToken)
+                // const noBookingToken = deleteRequest.headers.get("Authorization");
+                // localStorage.setItem("jwt", noBookingToken)
                 journeySection.style.display = "none";
                 contact.style.display = "none";
                 payment.style.display = "none";

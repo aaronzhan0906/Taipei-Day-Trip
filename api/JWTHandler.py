@@ -17,8 +17,6 @@ ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_TIME = int(os.getenv("ACCESS_TOKEN_EXPIRE_TIME"))
 
 class JWTHandler:
-
-
     @staticmethod
     def create_jwt_token(email: str) -> str:
         payload = {

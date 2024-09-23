@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Header
 from pydantic import BaseModel
-import json
 from api.JWTHandler import JWTHandler
 from api.orderModel import OrderModel
 from api.orderView import OrderView
@@ -33,7 +32,7 @@ async def post_order(order_detail: OrderDetail, authorization: str = Header(...)
     try:
         token = authorization.split()[1]
         new_token = JWTHandler.remove_booking_from_jwt(token)
-        user_email=JWTHandler.get_user_email(token)
+        user_email= JWTHandler.get_user_email(token)
         user_info = OrderModel.get_user_info_in_dict(user_email)
         order_number = OrderModel.generate_order_number()
         tappay_result = await OrderModel.process_tappay_payment(order_detail, order_number)

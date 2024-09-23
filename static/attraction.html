@@ -6,9 +6,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/views/layouts/attraction.css">
-  <link rel="stylesheet" href="/views/layouts/user.css">
-  <script type="module" src="/controllers/attraction__controller.js"></script>
+  <link rel="stylesheet" href="/static/css/attraction.css">
+  <link rel="stylesheet" href="/static/css/user.css">
+  <script type="module" src="/static/js/attraction/attraction__controller.js"></script>
   <title>Taipei Day Trip</title>
 </head>
 <body>
@@ -36,11 +36,11 @@
           
         </div>
       </div>
-      <div class="section__info">
+      <div class="section__info" style="display: none;">
         <div class="section__name"></div>
         <div class="section__subtitle">
           <span class="section__subtitle--category"></span>
-          <span class="section__subtitle--mid">at</span>
+          <span class="section__subtitle--mid"></span>
           <span class="section__subtitle--mrt"></span>
         </div>
         <form class="section__booking">
@@ -73,7 +73,7 @@
   <div class="main">
     <div class="main__description"></div>
     <div class="main__address">
-      <div class="main__address--title">景點地址：</div>
+      <div class="main__address--title"></div>
       <div class="main__address--content"></div>
     </div>
     <div class="main__transport">

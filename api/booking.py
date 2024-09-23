@@ -3,8 +3,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ValidationError 
 from typing import List
 from datetime import date
-from api.userModel import UserModel
-from api.jwt_utils import update_jwt_payload, SECRET_KEY, ALGORITHM
+from api.JWTHandler import JWTHandler, SECRET_KEY, ALGORITHM
 from data.database import get_cursor, conn_close
 import jwt
 
@@ -51,7 +50,8 @@ class BookingModel:
 
     @staticmethod
     def update_booking_token(token, booking):
-        return update_jwt_payload(token, {"booking": booking})
+        return JWTHandler.update_jwt_payload(token, {"booking": booking})
+    
 class BookingView:
     @staticmethod
     def error_response(status_code, message):
@@ -130,11 +130,10 @@ async def post_order(authorization: str = Header(...), booking: BookingInfo = No
 
 @router.delete("/api/booking")
 async def delete_order(authorization: str = Header(...)):
-    user_info = await UserModel.get_user_info(authorization)
-    if not user_info:
+    if authorization == "null":
         return BookingView.error_response(403, "Not logged in.")
     
-    try:
+    try:     
         token = authorization.split()[1]
         no_booking_token = BookingModel.update_booking_token(token, None)
         return BookingView.ok_response(200, message="刪除API", token=no_booking_token)

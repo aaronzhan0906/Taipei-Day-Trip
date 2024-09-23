@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Header
 from pydantic import BaseModel
-from api.jwt_utils import create_jwt_token, SECRET_KEY, ALGORITHM
+from api.JWTHandler import JWTHandler, SECRET_KEY, ALGORITHM
 from api.userModel import UserModel
 from api.userView import UserView
 import jwt
@@ -76,7 +76,7 @@ async def signin_user(user: UserSignIn):
         if not user_data or not UserModel.check_password(user_data[3], user.password):
             return UserView.error_response(400, "The username or password is incorrect.")
 
-        jwt_token = create_jwt_token(user.email)
+        jwt_token = JWTHandler.create_jwt_token(user.email)
         return UserView.ok_response(200, message="!!! User signed in successfully !!!", token=jwt_token)
     except Exception as exception:
         return UserView.error_response(500, str(exception))

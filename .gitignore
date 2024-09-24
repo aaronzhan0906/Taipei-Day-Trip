@@ -1,7 +1,5 @@
 .DS_Store
-cspell.json__pycache__
 *.pyc
 .env
-data/__pycache__
 __pycache__
-/misc
+/misc 

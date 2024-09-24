@@ -32,7 +32,7 @@ CCV: 123
 - Cloud deployment: **AWS EC2** instances managed with **Docker-Compose**
 
 ## Architecture
-<img width="1063" alt="TDT-Architecture" src="https://github.com/user-attachments/assets/25e1c5ba-1e81-4922-8e38-8693777e48bc">
+<img width="100%" alt="TDT-Architecture" src="https://github.com/user-attachments/assets/5be1eb62-ff41-4cde-a44d-fb97076be69c">
 
 ## Backend Technique
 #### Language / Framework

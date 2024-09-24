@@ -12,8 +12,8 @@ export function getNextPage(nextPage, keyword){
 
 
 export function handleObserver(nextPage) {
-    console.log("&&& handleObserver &&&");
-    const footer = document.querySelector('footer');
+    // console.log("&&& handleObserver &&&");
+    const footer = document.querySelector("footer");
     if (isObserverInitialized) return; 
 
     const options = {
@@ -25,7 +25,7 @@ export function handleObserver(nextPage) {
     const observer = new IntersectionObserver((entries) => {
         const entry = entries[0];  
         if (entry.isIntersecting) {
-            console.log("--- touch footer ---");
+            // console.log("--- touch footer ---");
             storeNextPage !== null 
                 ? loadNextPage(storeNextPage, storeKeyword) 
                 : console.log("===== NO MORE DATA TO LOAD! =====");
@@ -40,7 +40,7 @@ export function handleObserver(nextPage) {
 
 export async function loadNextPage(storeNextPage, storeKeyword) {
     try {
-        const apiUrl = `/api/attractions?page=${storeNextPage}${storeKeyword ? `&keyword=${storeKeyword}` : ''}`;
+        const apiUrl = `/api/attractions?page=${storeNextPage}${storeKeyword ? `&keyword=${storeKeyword}` : ""}`;
   
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -52,7 +52,7 @@ export async function loadNextPage(storeNextPage, storeKeyword) {
             createAttractionCard(attractionsData[i]);
         }
     
-        console.log(`### attractionsToLoad: ${nextPage} ###`);
+        // console.log(`### attractionsToLoad: ${nextPage} ###`);
         getNextPage(nextPage, keyword);
         } catch (error) {
         console.log("Error fetching attraction data.", error);

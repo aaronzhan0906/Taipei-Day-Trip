@@ -54,10 +54,8 @@ export const setupEventListeners = (elements) => {
     formSubmit.addEventListener("click", (event) => {
         event.preventDefault();
         if (isSignIn) {
-            console.log("in");
             userFormSignIn(elements);
         } else {
-            console.log("up");
             userFormSignUp(elements);
         }
     });

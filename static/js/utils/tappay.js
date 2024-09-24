@@ -142,7 +142,7 @@ const onSubmit = (event, tripDetail) =>  {
                 contact: contactInfo
             },
         };
-        console.log(orderData)
+        // console.log(orderData)
         sendPaymentToServer(orderData);
     });
 }

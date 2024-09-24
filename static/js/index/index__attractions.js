@@ -16,7 +16,7 @@ export async function fetchAttractionsData() {
             createAttractionCard(attractionsData[i]);
         }
   
-        console.log(`### attractionsToLoad:${nextPage} ###`);
+        // console.log(`### attractionsToLoad:${nextPage} ###`);
         handleObserver();
         getNextPage(nextPage);
         navigationLeftToHomePage();

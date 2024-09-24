@@ -74,7 +74,7 @@ export const bookingInAttractionPage = () => {
                 price: parseInt(document.querySelector(".booking__cost--amount").textContent, 10)
             };
 
-            console.log(data)
+            // console.log(data)
           
             try {
             const response = await fetch("/api/booking", {
@@ -92,7 +92,7 @@ export const bookingInAttractionPage = () => {
                 //     localStorage.setItem("jwt", newToken);
                 // }
                 window.location.href = "/booking";
-                console.log("預定成功");
+                // console.log("預定成功");
             } else {
                 const errorData = await response.json();
                 console.log(errorData)

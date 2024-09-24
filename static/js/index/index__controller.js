@@ -12,7 +12,6 @@ window.addEventListener("DOMContentLoaded", () => {
     // attractions //
     fetchAttractionsData();
     listBarApi();
-    searchInputApi();
 
     // user //
     const elements = getUserDomElements();

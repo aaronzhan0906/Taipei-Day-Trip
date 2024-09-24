@@ -89,9 +89,11 @@ export const detectJwt = async (elements) => {
             setLoggedInState(responseConfirmJwt.data.name);
         } else {
             setLoggedOutState();
+            alert(responseConfirmJwt.message)
             console.log(`detectJwtError: ${responseConfirmJwt.message}`);
         }
     } catch (error) {
+        alert(error);
         console.error("Error:", error);
         setLoggedOutState();
     }
@@ -119,6 +121,8 @@ export const detectJwt = async (elements) => {
             user.style.display = "block";
             overlay.style.display = "block";
         };
+        localStorage.removeItem("jwt");
+        localStorage.removeItem("signInName");
     }
 };
 
@@ -215,7 +219,7 @@ export const userFormSignUp = async (elements) => {
             }
         }
     } catch (error) {
-        console.error("Error", error);
+        console.error("Error:", error);
     }
 }
 

@@ -31,7 +31,7 @@ export async function handleSearch() {
         createAttractionCard(attractionsData[i]);
     }
 
-    console.log(`%%% searchToLoad:${nextPage}, ${keyword} %%%`);
+    // console.log(`%%% searchToLoad:${nextPage}, ${keyword} %%%`);
     handleObserver();
     getNextPage(nextPage, keyword);
     } 

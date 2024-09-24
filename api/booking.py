@@ -11,10 +11,23 @@ import jwt
 ##################### Model #####################
 class BookingModel:
     @staticmethod
-    def get_booking_from_token(token):
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload.get("booking")
-    
+    def get_user_id_from_token(authorization: str) -> int:
+        if authorization == "null":
+            raise HTTPException(status_code=403, detail="Not logged in.")
+        
+        try:
+            token = authorization.split()[1]
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            return payload["user_id"]
+        except IndexError:
+            raise HTTPException(status_code=401, detail="Invalid authorization header")
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token has expired")
+        except jwt.InvalidTokenError:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        except KeyError:
+            raise HTTPException(status_code=401, detail="Token payload is invalid")
+
     @staticmethod
     def get_cart_details(user_id):
         cursor, conn = get_cursor()
@@ -138,53 +151,46 @@ def validate_booking(booking: BookingInfo) -> List[str]:
 
 
 @router.get("/api/booking")
-async def get_order(authorization: str = Header(...)):
-    if authorization == "null":
-        return BookingView.error_response(403, "Not logged in.")
-    
+async def get_order(authorization: str = Header(...)):   
     try:
-        token = authorization.split()[1]
-        user_id = JWTHandler.get_user_id(token)
+        user_id = BookingModel.get_user_id_from_token(authorization)
         cart_detail = BookingModel.get_cart_details(user_id)
 
         if not cart_detail:
             return BookingView.ok_response(200, data=None)
-        
         return BookingView.ok_response(200, data=cart_detail)
+    
+    except HTTPException as he:
+        return BookingView.error_response(he.status_code, he.detail)
     except Exception as exception:
         print(f"[get_order] error {exception}")
         return BookingView.error_response(500, str(exception))
 
 @router.post("/api/booking")
 async def post_order(authorization: str = Header(...), booking: BookingInfo = None):
-    if authorization == "null":
-        return BookingView.error_response(403, "Not logged in.")
-    
     try:
-        token = authorization.split()[1]
-        user_id = JWTHandler.get_user_id(token)
+        user_id = BookingModel.get_user_id_from_token(authorization)
         BookingModel.create_new_cart(user_id, booking)
-        return BookingView.ok_response(200, "成功加入購物車")
-
-    except ValidationError as ve:
+        return BookingView.ok_response(200, message="成功加入購物車")
+    
+    except HTTPException as he:
+        return BookingView.error_response(he.status_code, he.detail)
+    except ValidationError as ve: # pydantic check
         error_messages = "; ".join(error["msg"] for error in ve.errors())
         return BookingView.error_response(400, f"建立失敗，輸入不正確: {error_messages}")
-
     except Exception as exception:
         print(f"[post_order] error: {exception}")
-        return BookingView.error_response(500, str(exception))
+        return BookingView.error_response(500, "Internal server error")
 
 @router.delete("/api/booking")
 async def delete_order(authorization: str = Header(...)):
-    if authorization == "null":
-        return BookingView.error_response(403, "Not logged in.")
-    
-    try:     
-        token = authorization.split()[1]
-        user_id = JWTHandler.get_user_id(token)
+    try:
+        user_id = BookingModel.get_user_id_from_token(authorization)
         BookingModel.clear_cart(user_id)
-
         return BookingView.ok_response(200, message="刪除購物車裡的項目")
+    
+    except HTTPException as he:
+        return BookingView.error_response(he.status_code, he.detail)
     except Exception as exception:
         print(f"[delete_order] error {exception}")
-        return BookingView.error_response(500, str(exception))
+        return BookingView.error_response(500, "Internal server error")

@@ -33,7 +33,6 @@ async def post_order(order_detail: OrderDetail, authorization: str = Header(...)
         token = authorization.split()[1]
         user_email= JWTHandler.get_user_email(token)
         user_info = OrderModel.get_user_info_in_dict(user_email)
-        print(user_info)
         order_number = OrderModel.generate_order_number()
         tappay_result = await OrderModel.process_tappay_payment(order_detail, order_number)
         response_data = await OrderModel.create_order_and_payment(order_detail, user_info, order_number, tappay_result)

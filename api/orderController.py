@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Header
 from pydantic import BaseModel
-import json
 from api.JWTHandler import JWTHandler
 from api.orderModel import OrderModel
 from api.orderView import OrderView
@@ -32,20 +31,21 @@ async def post_order(order_detail: OrderDetail, authorization: str = Header(...)
     
     try:
         token = authorization.split()[1]
-        new_token = JWTHandler.remove_booking_from_jwt(token)
-        user_email=JWTHandler.get_user_email(token)
+        user_email= JWTHandler.get_user_email(token)
         user_info = OrderModel.get_user_info_in_dict(user_email)
+        print(user_info)
         order_number = OrderModel.generate_order_number()
         tappay_result = await OrderModel.process_tappay_payment(order_detail, order_number)
         response_data = await OrderModel.create_order_and_payment(order_detail, user_info, order_number, tappay_result)
-        return OrderView.ok_response(200, response_data, new_token)
+        OrderModel.clear_cart(user_info["user_id"])
+        return OrderView.ok_response(200, response_data)
 
     except KeyError as exception:
-        print(f"TapPay response missing key: {str(exception)}")
-        return OrderView.error_response(500, f"TapPay response missing key: {str(exception)}")
+        print(f"[TapPay response missing key]: {str(exception)}")
+        return OrderView.error_response(500, f"[TapPay response missing key]: {str(exception)}")
 
     except Exception as exception:
-        print(f"POST/API/ORDERS {str(exception)}")
+        print(f"[post_order] error: {str(exception)}")
         return OrderView.error_response(500, str(exception))
 
 @router.get("/api/order/{orderNumber}")
@@ -63,4 +63,5 @@ async def get_order(orderNumber: str, authorization: str = Header(...)):
         
         return OrderView.ok_response(200, formatted_order_data)
     except Exception as exception:
+        print(f"[get_order] error: {str(exception)}")
         return OrderView.error_response(500, str(exception))

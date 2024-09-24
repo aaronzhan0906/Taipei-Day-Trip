@@ -6,11 +6,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/views/layouts/user.css">
-  <link rel="stylesheet" href="/views/layouts/booking.css">
+  <link rel="stylesheet" href="/static/css/user.css">
+  <link rel="stylesheet" href="/static/css/booking.css">
   <script src="https://js.tappaysdk.com/sdk/tpdirect/v5.14.0"></script>
   <script> TPDirect.setupSDK(151768, 'app_bpgvxrsrLqJPEmRm62KQo07LxkPx3pQnADbRY54qEFQvc0kY0flPCYQLRK9a', 'sandbox') </script>
-  <script type="module" src="/controllers/booking__controller.js"></script>
+  <script type="module" src="/static/js/booking/booking__controller.js"></script>
   <title>Taipei Day Trip</title>
 </head>
 <body>
@@ -30,9 +30,9 @@
   <div class="main">
     <div class="journey">
       <div class="journey__greet">
-        <span>您好，</span>
+        <span></span>
         <span class="journey__greet--username"></span>
-        <span>，待預定的行程如下：</span>
+        <span></span>
       </div>
       <div class="journey__section">
         <div class="section__image"></div>
@@ -69,15 +69,15 @@
         <form class="contact__form">
           <div>
             <label class="contact__item">聯絡姓名:</label>
-             <input type="text" class="contact__form--name" name="name" value="測試用姓名"> <!-- value="測試用姓名" -->
+             <input type="text" class="contact__form--name" name="name" > <!-- value="測試用姓名" -->
           </div>
           <div>
             <label class="contact__item">聯絡信箱:</label>
-            <input type="email" class="contact__form--email" name="name" value="test@gmail.com" > <!-- value="test@gmail.com" -->
+            <input type="email" class="contact__form--email" name="name"  > <!-- value="test@gmail.com" -->
           </div>
           <div>
             <label class="contact__item">手機號碼:</label>
-            <input type="tel" class="contact__form--telephone" name="name" value="0989898989"> <!-- value="0989898989" -->
+            <input type="tel" class="contact__form--telephone" name="name" > <!-- value="0989898989" -->
           </div>
         </form>
         <div class="contact__footer">請保持手機暢通，準時到達，導覽人員將用手機與您聯繫，務必留下正確的聯絡方式。</div>

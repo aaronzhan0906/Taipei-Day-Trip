@@ -3,9 +3,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ValidationError 
 from typing import List
 from datetime import date
-from api.userModel import UserModel
-from api.jwt_utils import update_jwt_payload, SECRET_KEY, ALGORITHM
-from data.database import get_cursor, conn_close
+from api.JWTHandler import JWTHandler, SECRET_KEY, ALGORITHM
+from data.database import get_cursor, conn_commit, conn_close
 import jwt
 
 
@@ -15,43 +14,93 @@ class BookingModel:
     def get_booking_from_token(token):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload.get("booking")
-
+    
     @staticmethod
-    def get_attraction_details(attraction_id):
+    def get_cart_details(user_id):
         cursor, conn = get_cursor()
         try:
-            query = "SELECT attraction_id, name, address, images FROM attractions WHERE attraction_id = %s"
-            cursor.execute(query, (attraction_id,))
-            return cursor.fetchone()
+            query = """
+            SELECT c.attraction_id, c.cart_date, c.cart_time, c.cart_price,
+                a.name, a.address, a.images
+            FROM carts c
+            JOIN attractions a ON c.attraction_id = a.attraction_id
+            WHERE c.user_id = %s
+            """
+            cursor.execute(query, (user_id,))
+            result = cursor.fetchone()
+            
+            if not result:
+                return None  
+            
+            attraction_id, cart_date, cart_time, cart_price, name, address, images = result
+
+            image_url = 'https://' + images.strip('"').split('https://')[1].split('\\n')[0]
+        
+            booking_detail = {
+                "attraction": {
+                    "id": attraction_id,
+                    "name": name,
+                    "address": address,
+                    "image": image_url
+                },
+                "date": str(cart_date),
+                "time": cart_time,
+                "price": cart_price
+            }
+        
+            return booking_detail
+        except Exception as e:
+            print(f"[get_cart_details] error: {e}")
+            return None
+        finally:
+            conn_close(conn)
+  
+
+    @staticmethod
+    def create_new_cart(user_id, booking):
+        cursor, conn = get_cursor()
+        try: 
+            query = """
+            INSERT INTO carts(user_id, attraction_id, cart_date, cart_time, cart_price)
+            VALUES(%s,%s,%s,%s,%s)
+            ON DUPLICATE KEY UPDATE 
+                user_id = VALUES(user_id),
+                attraction_id = VALUES(attraction_id),
+                cart_date = VALUES(cart_date),
+                cart_time = VALUES(cart_time),
+                cart_price = VALUES(cart_price)
+            """
+            cursor.execute(query, (user_id, booking.attractionId,
+                                   booking.date, booking.time, booking.price))
+            conn_commit(conn)
+
+        except Exception as e:
+            conn.rollback()
+            print(f"[create_new_cart] error: {e}")
         finally:
             conn_close(conn)
 
-    @staticmethod
-    def create_booking_detail(attraction, booking):
-        return {
-            "attraction": {
-                "id": attraction[0],
-                "name": attraction[1],
-                "address": attraction[2],
-                "image": 'https://' + attraction[3].strip('"').split('https://')[1].split('\\n')[0]
-            },
-            "date": booking["date"],
-            "time": booking["time"],
-            "price": booking["price"]
-        }
+    def clear_cart(user_id):
+        cursor, conn = get_cursor()
+        try: 
+            query = """
+            UPDATE carts
+            SET attraction_id = NULL,
+                cart_date = NULL,
+                cart_time = NULL,
+                cart_price = NULL
+            WHERE user_id = %s
+            """
+            cursor.execute(query, (user_id,))
+            conn_commit(conn)
 
-    @staticmethod
-    def create_new_booking(booking):
-        return {
-            "attractionId": booking.attractionId,
-            "date": str(booking.date),
-            "time": booking.time,
-            "price": booking.price
-        }
-
-    @staticmethod
-    def update_booking_token(token, booking):
-        return update_jwt_payload(token, {"booking": booking})
+        except Exception as e:
+            conn.rollback()
+            print(f"[clear_cart] error {e}")
+            return None  
+        finally:
+            conn_close(conn)
+    
 class BookingView:
     @staticmethod
     def error_response(status_code, message):
@@ -85,7 +134,6 @@ def validate_booking(booking: BookingInfo) -> List[str]:
         errors.append("Invalid time slot")
     elif booking.price != time_slot_prices[booking.time]:
         errors.append(f"Incorrect price for {booking.time} slot")
-        
     return errors
 
 
@@ -96,18 +144,15 @@ async def get_order(authorization: str = Header(...)):
     
     try:
         token = authorization.split()[1]
-        booking = BookingModel.get_booking_from_token(token)
-        if not booking:
+        user_id = JWTHandler.get_user_id(token)
+        cart_detail = BookingModel.get_cart_details(user_id)
+
+        if not cart_detail:
             return BookingView.ok_response(200, data=None)
-
-        attraction = BookingModel.get_attraction_details(booking["attractionId"])
-        if not attraction:
-            return BookingView.ok_response(200, data=None)
-
-        booking_detail = BookingModel.create_booking_detail(attraction, booking)
-        return BookingView.ok_response(200, data=booking_detail)
-
+        
+        return BookingView.ok_response(200, data=cart_detail)
     except Exception as exception:
+        print(f"[get_order] error {exception}")
         return BookingView.error_response(500, str(exception))
 
 @router.post("/api/booking")
@@ -117,27 +162,29 @@ async def post_order(authorization: str = Header(...), booking: BookingInfo = No
     
     try:
         token = authorization.split()[1]
-        new_booking = BookingModel.create_new_booking(booking)
-        new_token = BookingModel.update_booking_token(token, new_booking)
-        return BookingView.ok_response(200, token=new_token)
+        user_id = JWTHandler.get_user_id(token)
+        BookingModel.create_new_cart(user_id, booking)
+        return BookingView.ok_response(200, "成功加入購物車")
 
     except ValidationError as ve:
         error_messages = "; ".join(error["msg"] for error in ve.errors())
         return BookingView.error_response(400, f"建立失敗，輸入不正確: {error_messages}")
 
     except Exception as exception:
+        print(f"[post_order] error: {exception}")
         return BookingView.error_response(500, str(exception))
 
 @router.delete("/api/booking")
 async def delete_order(authorization: str = Header(...)):
-    user_info = await UserModel.get_user_info(authorization)
-    if not user_info:
+    if authorization == "null":
         return BookingView.error_response(403, "Not logged in.")
     
-    try:
+    try:     
         token = authorization.split()[1]
-        no_booking_token = BookingModel.update_booking_token(token, None)
-        return BookingView.ok_response(200, message="刪除API", token=no_booking_token)
+        user_id = JWTHandler.get_user_id(token)
+        BookingModel.clear_cart(user_id)
 
+        return BookingView.ok_response(200, message="刪除購物車裡的項目")
     except Exception as exception:
+        print(f"[delete_order] error {exception}")
         return BookingView.error_response(500, str(exception))

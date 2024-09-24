@@ -17,48 +17,17 @@ ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_TIME = int(os.getenv("ACCESS_TOKEN_EXPIRE_TIME"))
 
 class JWTHandler:
-
-
     @staticmethod
-    def create_jwt_token(email: str) -> str:
+    def create_jwt_token(email: str, user_id=str, name=str) -> str:
         payload = {
             "sub": email,
+            "user_id": user_id,
+            "name": name,
             "exp": datetime.now(tz=timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_TIME),
             "type": "access"
         }
         token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
         return token
-
-    @staticmethod
-    def update_jwt_payload(token: str, new_data: dict) -> str:
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            if "booking" in new_data:
-                payload["booking"] = new_data["booking"]
-
-            payload["exp"] = datetime.now(tz=timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_TIME)
-            updated_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-            print(f"JWT更新 form update_jwt_payload")
-
-            return updated_token
-
-        except jwt.PyJWTError as exception:
-            print(f"JWT Error: {exception}")
-            return None
-
-    @staticmethod
-    def remove_booking_from_jwt(token: str) -> str:
-        try:
-            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            del payload["booking"]
-            payload["exp"] = datetime.now(tz=timezone.utc) + timedelta(hours=ACCESS_TOKEN_EXPIRE_TIME)
-            updated_token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-            print(f"JWT 已更新，booking 已移除 from remove_booking_from_jwt")
-            return updated_token
-
-        except jwt.PyJWTError as exception:
-            print(f"JWT Error: {exception}")
-            return None
     
     @staticmethod
     def confirm_same_user_by_jwt(token: str, user_email: str) -> bool:
@@ -71,6 +40,16 @@ class JWTHandler:
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             return payload["sub"]
+        except jwt.ExpiredSignatureError:
+            return None
+        except jwt.PyJWTError:
+            return None
+        
+    @staticmethod
+    def get_user_id(token: str):
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            return payload["user_id"]
         except jwt.ExpiredSignatureError:
             return None
         except jwt.PyJWTError:

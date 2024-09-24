@@ -26,6 +26,7 @@ class UserModel:
             conn_commit(conn)
             return cursor.fetchone()
         except Exception as exception:
+            print(f"[create_user] error: {str(exception)}")
             raise exception
         finally:
             conn_close(conn)
@@ -37,6 +38,7 @@ class UserModel:
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
             return cursor.fetchone()
         except Exception as exception:
+            print(f"[get_user_by_email] error: {str(exception)}")
             raise exception
         finally:
             conn_close(conn)
@@ -48,6 +50,7 @@ class UserModel:
             cursor.execute("SELECT user_id, name, email FROM users WHERE email = %s", (email,))
             return cursor.fetchone()
         except Exception as exception:
+            print(f"[get_user_info] error: {str(exception)}")
             raise exception
         finally:
             conn_close(conn)

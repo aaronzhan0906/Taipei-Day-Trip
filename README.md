@@ -70,4 +70,4 @@ CCV: 123
 - TapPay SDK: Payment processing integration
 
 ## Database Schema
-<img width="1045" alt="TDT-database schema" src="https://github.com/user-attachments/assets/2e4a03d3-6aa5-4129-a491-4b130f3c20c6">
+<img width="1060" alt="TDT-database schema" src="https://github.com/user-attachments/assets/c07ed240-2fb8-4bfa-8771-0bda1a0afe01">

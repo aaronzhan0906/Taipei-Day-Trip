@@ -23,7 +23,7 @@ CCV: 123
 
 - Member system : **JWT token-based** authentication
 - Online shopping : Shopping cart system, Infinite scroll, lazy loading, and Carousel Slider
-- Cross-device compatibility: **Responsive Web Design** (**RWD**) using vanilla **JavaScript**, **CSS**, and **HTML**
+- Cross-device compatibility: **Responsive Web Design** (**RWD**) using **JavaScript**, **CSS**, and **HTML**
 - Online payments: Integration of **TapPay SDK** third-party payment service
 - Data management: Normalized **MySQL** database in **3NF** with optimized queries using indexes and connection pooling.
 - Cache: **Redis** caching for recently accessed attraction data, improving loading speed.

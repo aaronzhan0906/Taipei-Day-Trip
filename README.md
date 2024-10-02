@@ -2,8 +2,7 @@
 
 Website URL : https://taipeidaytrip.online/
 
-Taipei Day Trip is a website that lets users discover and explore unique attractions in Taipei. Visitors can book and pay for their chosen trips!
-
+Taipei Day Trip is an e-commerce travel website, implementing features such as attraction keyword search, booking orders, and third-party payment integration.
 ```code
 Test Account: test@gmail.com
 Test Password: test

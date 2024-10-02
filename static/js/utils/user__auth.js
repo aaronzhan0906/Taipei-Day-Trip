@@ -2,7 +2,8 @@
 let isSignIn = true;
 
 export const userFormSignIn = async (elements) => {
-    const { userForm, user ,overlay,formResult, userBox } = elements;
+    const { userForm, user ,overlay, formResult, userBox } = elements;
+
     const formData = new FormData(userForm);
     const data = {
         email: formData.get("email"),
@@ -35,7 +36,6 @@ export const userFormSignIn = async (elements) => {
             credentials: "include" 
         });
 
-        const responseData = await response.json();
         if (response.ok) {
             const jwt = response.headers.get("Authorization");
             localStorage.setItem("jwt",jwt);
@@ -67,7 +67,7 @@ export const userFormSignIn = async (elements) => {
 
 // confirm USER-INFO //
 export const detectJwt = async (elements) => {
-    const { navigationRightSignIn, navigationRightBooking, user, overlay } = elements;
+    const { navigationRightSignIn, navigationRightBooking, user, overlay, formEmail, formPassword } = elements;
     const storedJwt = localStorage.getItem("jwt");
   
     if (!storedJwt) {
@@ -120,7 +120,14 @@ export const detectJwt = async (elements) => {
         navigationRightBooking.onclick = () => {
             user.style.display = "block";
             overlay.style.display = "block";
+            formEmail.value = "test@gmail.com";
+            formPassword.value = "test";
         };
+        navigationRightSignIn.onclick = () =>{
+            formEmail.value = "test@gmail.com"
+            formPassword.value = "test";
+        }
+
         localStorage.removeItem("jwt");
         localStorage.removeItem("signInName");
     }
@@ -226,7 +233,6 @@ export const userFormSignUp = async (elements) => {
 
 export const clearFormFields = (elements) => {
     const { formName, formEmail, formPassword } = elements;
-
     formName.value = "";
     formEmail.value = "";
     formPassword.value = "";
@@ -253,7 +259,7 @@ export const initialSignUp = (elements) => {
 }
 
 export const initialSignIn = (elements) => {
-    const { formResult, user, formFooterRegister, formFooterQuestion, formTitle, formName, userBox, formSubmit} = elements;
+    const { formResult, user, formFooterRegister, formFooterQuestion, formTitle, formName, userBox, formSubmit, formEmail, formPassword} = elements;
     user.style.top = "217.5px";
     user.style.height = "275px";
     userBox.style.height = "265px";
@@ -263,8 +269,7 @@ export const initialSignIn = (elements) => {
     formTitle.textContent = "登入會員帳號";
     formSubmit.textContent = "登入帳戶";
     clearFormFields(elements);
-    isSignIn = true;
-    
+    isSignIn = true;    
 
     if (formResult.textContent) {
         formResult.textContent = "";

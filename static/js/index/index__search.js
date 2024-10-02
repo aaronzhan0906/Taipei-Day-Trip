@@ -20,23 +20,23 @@ export async function handleSearch() {
     const searchApiUrl = `/api/attractions?page=0&keyword=${keyword}`;
 
     try {
-    const response = await fetch(searchApiUrl);
-    const data = await response.json();
-    const attractionsData = data.data;
-    const nextPage = data.nextPage;
-    const attractionsContainer = document.querySelector(".attractions");
-    attractionsContainer.textContent = "";
+        const response = await fetch(searchApiUrl);
+        const data = await response.json();
+        const attractionsData = data.data;
+        const nextPage = data.nextPage;
+        const attractionsContainer = document.querySelector(".attractions");
+        attractionsContainer.textContent = "";
 
-    for (let i = 0; i < attractionsData.length; i++) {
-        createAttractionCard(attractionsData[i]);
-    }
+        for (let i = 0; i < attractionsData.length; i++) {
+            createAttractionCard(attractionsData[i]);
+        }
 
-    // console.log(`%%% searchToLoad:${nextPage}, ${keyword} %%%`);
-    handleObserver();
-    getNextPage(nextPage, keyword);
+        // console.log(`%%% searchToLoad:${nextPage}, ${keyword} %%%`);
+        handleObserver();
+        getNextPage(nextPage, keyword);
     } 
 
     catch (error) {
-    console.log("Error fetching attraction data.", error);
+        console.log("Error fetching attraction data.", error);
     }
 };

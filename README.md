@@ -17,8 +17,12 @@ CCV: 123
 ```
 ![TDT 1](https://github.com/user-attachments/assets/55650a2b-6bea-42f7-9b3c-33ffcc9d329d)
 
-https://github.com/user-attachments/assets/2b5acc30-62bb-4f36-baf0-afb67c4f0243
 
+https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
+
+
+
+<br>
 
 ## Features and Techniques
 

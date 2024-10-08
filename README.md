@@ -35,7 +35,7 @@ https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
 - Cache: **Redis** caching for recently accessed attraction data, improving loading speed.
 - Frontend-backend communication: **RESTful API** implementation
 - Web server: **Nginx** for reverse proxy and **SSL** services
-- Cloud deployment: **AWS EC2** instances managed with **Docker-Compose**
+- Cloud deployment: **AWS EC2** instances managed with **Docker Compose**
 
 ## Architecture
 <img width="100%" alt="TDT-Architecture" src="https://github.com/user-attachments/assets/20bcaa59-2ff4-43ad-9eea-84d17f7341a2">

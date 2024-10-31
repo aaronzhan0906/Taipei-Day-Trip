@@ -26,31 +26,41 @@ db_pool = MySQLConnectionPool(
 print("Connection pool created.")
 
 def execute_query(query, params=None):
-    """execute and return result"""
-    try:
-        conn = db_pool.get_connection()
-        cursor = conn.cursur(dicitonary=True)
-        cursor.execute(query, params or ())
-        result = cursor.fetchall()
-        return result 
-
-    except Error as e:
-        print(f"Database error: {e}")
-        raise
-
-    finally:
-        cursor.close()
-        conn.close()
-
-def execute_update(query, params=None):
-    """execute update, insert operation"""
+    """執行查詢操作"""
+    conn = None
+    cursor = None
     try:
         conn = db_pool.get_connection()
         cursor = conn.cursor()
-        cursor.execute(query, params or ())
-        conn.commit()
-        return cursor.rowcount
+        cursor.execute(query, params)
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"查詢執行錯誤: {str(e)}")
+        raise e
     finally:
-        cursor.close()
-        conn.close()
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def execute_update(query, params=None):
+    """execute update operation"""
+    conn = None
+    cursor = None
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        conn.commit()
+        return cursor.lastrowid
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"更新執行錯誤: {str(e)}")
+        raise e
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 

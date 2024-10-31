@@ -1,9 +1,7 @@
 # booking/models.py
 from django.db import connection
 import jwt
-from django.conf import settings
-from typing import Optional, Dict, Any
-
+from utils.JWTHandler import JWTHandler, SECRET_KEY, ALGORITHM
 class BookingModel:
    @staticmethod
    def get_user_id_from_token(authorization: str) -> int:
@@ -12,11 +10,7 @@ class BookingModel:
         
         try:
             token = authorization.split()[1]
-            payload = jwt.decode(
-                token, 
-                settings.SECRET_KEY,
-                algorithms=[settings.JWT_ALGORITHM]
-            )
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             return payload["user_id"]
         except IndexError:
             raise ValueError("Invalid authorization header")
@@ -67,15 +61,15 @@ class BookingModel:
        with connection.cursor() as cursor:
            try: 
                query = """
-               INSERT INTO carts(user_id, attraction_id, cart_date, cart_time, cart_price)
-               VALUES(%s,%s,%s,%s,%s)
-               ON DUPLICATE KEY UPDATE 
-                   user_id = VALUES(user_id),
-                   attraction_id = VALUES(attraction_id),
-                   cart_date = VALUES(cart_date),
-                   cart_time = VALUES(cart_time),
-                   cart_price = VALUES(cart_price)
-               """
+                INSERT INTO carts(user_id, attraction_id, cart_date, cart_time, cart_price)
+                VALUES(%s,%s,%s,%s,%s) AS new_values
+                ON DUPLICATE KEY UPDATE 
+                    user_id = new_values.user_id,
+                    attraction_id = new_values.attraction_id,
+                    cart_date = new_values.cart_date,
+                    cart_time = new_values.cart_time,
+                    cart_price = new_values.cart_price
+                """
                cursor.execute(query, (
                    user_id, 
                    booking.attractionId,

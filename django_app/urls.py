@@ -47,4 +47,6 @@ urlpatterns = [
     path('api/attractions', include('attractions.urls')),  
     path('api/attraction/', include('attractions.urls')),   # Because of refactor from FastAPI
     path('api/mrts', include('mrts.urls')),
+    path("api/user", include("user.urls")),
+    path("api/booking", include("booking.urls")),
 ] + static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

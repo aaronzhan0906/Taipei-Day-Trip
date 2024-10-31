@@ -1,9 +1,10 @@
+# attractions/urls.py
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.AttractionView.get_attractions),
-    path('<int:attraction_id>', views.AttractionView.get_attraction),
+    path("", views.get_attractions),
+    path("<int:attraction_id>", views.get_attraction),
 ]
 
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Header
 from pydantic import BaseModel
-from api.JWTHandler import JWTHandler
+from utils.JWTHandler import JWTHandler
 from api.orderModel import OrderModel
 from api.orderView import OrderView
 

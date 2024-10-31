@@ -3,8 +3,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ValidationError 
 from typing import List
 from datetime import date
-from api.JWTHandler import JWTHandler, SECRET_KEY, ALGORITHM
-from data.database import get_cursor, conn_commit, conn_close
+from utils.JWTHandler import JWTHandler, SECRET_KEY, ALGORITHM
+from django_app.database import get_cursor, conn_commit, conn_close
 import jwt
 
 

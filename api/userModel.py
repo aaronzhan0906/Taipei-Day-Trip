@@ -1,4 +1,5 @@
-from data.database import get_cursor, conn_commit, conn_close
+
+from django_app.database import get_cursor, conn_commit, conn_close
 import bcrypt 
 import re
 

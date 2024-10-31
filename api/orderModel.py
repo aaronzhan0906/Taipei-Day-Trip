@@ -5,7 +5,7 @@ import shortuuid
 from datetime import datetime
 import aiohttp
 import asyncio
-from data.database import get_cursor, conn_commit, conn_close
+from django_app.database import get_cursor, conn_commit, conn_close
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 root_dir = os.path.dirname(current_dir)

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Header
 from pydantic import BaseModel
-from api.JWTHandler import JWTHandler, SECRET_KEY, ALGORITHM
+from utils.JWTHandler import JWTHandler, SECRET_KEY, ALGORITHM
 from api.userModel import UserModel
 from api.userView import UserView
 import jwt

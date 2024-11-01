@@ -41,7 +41,7 @@ async def signup_user(user: UserSignUp):
 @router.get("/api/user/auth")
 async def get_user_info(authorization: str = Header(...)):
     if authorization == "null":
-        return UserView.error_response(403, "No JWT checked from backend.")
+        return UserView.error_response(401, "Not logged in.")
     
     try:
         token = authorization.split()[1]
@@ -56,10 +56,10 @@ async def get_user_info(authorization: str = Header(...)):
         return UserView.ok_response(200, data=user_info, message="User is found.")
     except ExpiredSignatureError:
         print("[ExpiredSignatureError] Token has expired.")
-        return UserView.error_response(401, "Token has expired.")
+        return UserView.error_response(403, "Token has expired.")
     except InvalidTokenError:
         print("[InvalidTokenError] Invalid token.")
-        return UserView.error_response(401, "Invalid token.")
+        return UserView.error_response(403, "Invalid token.")
     except Exception as exception:
         print(f"[get_user_info] error {exception}")
         return UserView.error_response(500, str(exception))

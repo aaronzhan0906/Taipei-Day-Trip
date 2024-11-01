@@ -139,3 +139,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # URL 結尾帶斜線是 Django 的最佳實踐，但我不想更動前端程式碼，因為 FastAPI 會同時開著
 APPEND_SLASH = False
+
+# deploy
+ALLOWED_HOSTS = ['0.0.0.0', 'localhost', '127.0.0.1']

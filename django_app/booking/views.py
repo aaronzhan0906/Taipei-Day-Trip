@@ -16,7 +16,7 @@ class BookingSerializer(serializers.Serializer):
         if data["time"] not in time_slot_prices:
             raise serializers.ValidationError("Invalid time slot")
         elif data["price"] != time_slot_prices[data["time"]]:
-            raise serializers.ValidationError(f"Incorrect price for {data["time"]} slot")
+            raise serializers.ValidationError(f"Incorrect price for {data['time']} slot")
         return data
 
 @api_view(["GET", "POST", "DELETE"])

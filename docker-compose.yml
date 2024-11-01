@@ -1,5 +1,5 @@
 services:
-  app:
+  fastapi:
     build:
       context: ./fastapi_app
       dockerfile: Dockerfile
@@ -7,13 +7,16 @@ services:
       - "8000:8000"
     environment:
       - PORT=8000
+      - DB_HOST=host.docker.internal
       - DB_NAME=taipei_attractions
       - REDIS_HOST=redis
+      - STATIC_FILES_DIR=/static  # 設置靜態文件目錄路徑
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command:  uvicorn app:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./fastapi_app:/app
+      - ./static:/static  # 掛載靜態文件目錄
     depends_on:
       - redis
 
@@ -25,6 +28,7 @@ services:
       - "8001:8001"
     environment:
       - PORT=8001
+      - DB_HOST=host.docker.internal
       - DB_NAME=taipei_attractions
       - REDIS_HOST=redis
     extra_hosts:
@@ -32,6 +36,7 @@ services:
     command: uvicorn django_app.asgi:application --host 0.0.0.0 --port 8001 --reload
     volumes:
       - ./django_app:/django_app
+      - ./static:/static       
     depends_on:
       - redis
 

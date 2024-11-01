@@ -46,9 +46,9 @@ class BookingResponse:
 def booking_view(request):
    """Router"""
    handlers = {
-       "GET": get_cart_details,
-       "POST": create_new_cart,
-       "DELETE": clear_cart
+       "GET": get_order,
+       "POST": post_order,
+       "DELETE": delete_order
    }
    
    handler = handlers.get(request.method)
@@ -58,7 +58,7 @@ def booking_view(request):
    return handler(request)
 
 # Views
-def get_cart_details(request):
+def get_order(request):
    try:
        authorization = request.headers.get("Authorization")
        user_id = BookingModel.get_user_id_from_token(authorization)
@@ -73,27 +73,25 @@ def get_cart_details(request):
        return BookingResponse.error_response(401, str(e))
    except Exception as e:
        print(f"[get_cart] error {e}")
-       return BookingResponse.error_response(500, str(e))
+       return BookingResponse.error_response(500, "Internal server error")
 
-def create_new_cart(request):
+def post_order(request):
    try:
-       authorization = request.headers.get("Authorization")
-       user_id = BookingModel.get_user_id_from_token(authorization)
-       if user_id is None:
-           return BookingResponse.error_response(403, "Not logged in.")
-
-       # Pydantic validation
        try:
            booking_data = json.loads(request.body)
            booking = BookingInfo(**booking_data)
        except ValidationError as ve:
            error_messages = "; ".join(str(error) for error in ve.errors())
            return BookingResponse.error_response(400, f"建立失敗，輸入不正確: {error_messages}")
-
-       # Business logic validation
+       
        errors = booking.validate_booking()
        if errors:
            return BookingResponse.error_response(400, f"建立失敗，輸入不正確: {"; ".join(errors)}")
+       
+       authorization = request.headers.get("Authorization")
+       user_id = BookingModel.get_user_id_from_token(authorization)
+       if user_id is None:
+           return BookingResponse.error_response(403, "Not logged in.")
 
        if BookingModel.create_new_cart(user_id, booking):
            return BookingResponse.ok_response(message="成功加入購物車")
@@ -103,7 +101,7 @@ def create_new_cart(request):
        print(f"[create_cart] error: {e}")
        return BookingResponse.error_response(500, "Internal server error")
 
-def clear_cart(request):
+def delete_order(request):
    try:
        authorization = request.headers.get("Authorization")
        user_id = BookingModel.get_user_id_from_token(authorization)

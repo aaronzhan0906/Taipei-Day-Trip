@@ -42,8 +42,20 @@ INSTALLED_APPS = [
     "booking",
     "utils",
     "user",
-
+    "order",
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [], 
+    'DEFAULT_PERMISSION_CLASSES': [],      
+    'UNAUTHENTICATED_USER': None          
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -70,6 +82,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'django_app.wsgi.application'
+ASGI_APPLICATION = 'django_app.asgi.application'
 
 
 # Database

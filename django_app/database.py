@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-from mysql.connector import Error
 from mysql.connector.pooling import MySQLConnectionPool
 
 current_dir = os.path.dirname(os.path.abspath(__file__))

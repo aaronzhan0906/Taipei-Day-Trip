@@ -4,3 +4,4 @@ export const navigationLeftToHomePage = () => {
     window.location.href = homePage;
     }
 )};
+ 

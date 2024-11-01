@@ -1,4 +1,6 @@
-from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 from .models import AttractionModel
 from mrts.models import MRTModel
 
@@ -20,8 +22,8 @@ class AttractionView:
                 images_raw.strip('"').replace('\\\\','\\').split('\\n') if images_raw else []
             )(attraction[9])
         }
-    
 
+@api_view(["GET"])
 def get_attractions(request):
     try:
         page = int(request.GET.get('page', 0))
@@ -48,34 +50,34 @@ def get_attractions(request):
                         for attraction in attractions_tuple]
         next_page = page + 1 if total_count >= offset + limit else None
 
-        return JsonResponse({
+        return Response({
             "nextPage": next_page,
             "data": attractions_list
         })
     
     except Exception as e:
         print(e)
-        return JsonResponse({
+        return Response({
             "error": True,
             "message": str(e)
-        }, status=500)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
+@api_view(["GET"])
 def get_attraction(request, attraction_id):
     try:
         attraction = AttractionModel.get_attraction_by_id(attraction_id)
 
         if attraction:
             attraction_dict = AttractionView.attraction_to_dict(attraction)
-            return JsonResponse({"data": attraction_dict})
+            return Response({"data": attraction_dict})
         else:
-            return JsonResponse({
+            return Response({
                 "error": True,
                 "message": "Attraction number is incorrect."
-            }, status=400)
+            }, status=status.HTTP_400_BAD_REQUEST)
     
     except Exception as e:
-        return JsonResponse({
+        return Response({
             "error": True, 
             "message": str(e)
-        }, status=500)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

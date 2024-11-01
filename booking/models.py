@@ -57,7 +57,7 @@ class BookingModel:
                return None
 
    @staticmethod
-   def create_new_cart(user_id, booking):
+   def create_new_cart(user_id, booking_data):
        with connection.cursor() as cursor:
            try: 
                query = """
@@ -71,11 +71,11 @@ class BookingModel:
                     cart_price = new_values.cart_price
                 """
                cursor.execute(query, (
-                   user_id, 
-                   booking.attractionId,
-                   booking.date,
-                   booking.time,
-                   booking.price
+                    user_id, 
+                    booking_data["attractionId"], 
+                    booking_data["date"],          
+                    booking_data["time"],          
+                    booking_data["price"]          
                ))
                connection.commit()
                return True

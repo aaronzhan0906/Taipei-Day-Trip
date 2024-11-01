@@ -1,117 +1,126 @@
-# booking/views.py
-from django.http import JsonResponse
-import json
-from pydantic import BaseModel, ValidationError
-from datetime import date
+from rest_framework import serializers
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 from .models import BookingModel
-from typing import List
 
-# Pydantic Models for request validation
-class BookingInfo(BaseModel):
-    attractionId: int
-    date: date
-    time: str
-    price: int
+class BookingSerializer(serializers.Serializer):
+    attractionId = serializers.IntegerField()
+    date = serializers.DateField()
+    time = serializers.CharField()
+    price = serializers.IntegerField()
 
-    def validate_booking(self) -> List[str]:
+    def validate(self, data):
         time_slot_prices = {"morning": 2000, "afternoon": 2500}
-        errors = []
         
-        if self.time not in time_slot_prices:
-            errors.append("Invalid time slot")
-        elif self.price != time_slot_prices[self.time]:
-            errors.append(f"Incorrect price for {self.time} slot")
-        return errors
+        if data["time"] not in time_slot_prices:
+            raise serializers.ValidationError("Invalid time slot")
+        elif data["price"] != time_slot_prices[data["time"]]:
+            raise serializers.ValidationError(f"Incorrect price for {data["time"]} slot")
+        return data
 
-
-# Response helper
-class BookingResponse:
-    @staticmethod
-    def error_response(status_code, message):
-        return JsonResponse(
-            {"error": True, "message": message}, 
-            status=status_code
-        )
-    
-    @staticmethod
-    def ok_response(status_code=200, data=None, message=None):
-        content = {"ok": True}
-        if data is not None:
-            content["data"] = data
-        if message is not None:
-            content["message"] = message
-        return JsonResponse(content, status=status_code)
-
-
+@api_view(["GET", "POST", "DELETE"])
 def booking_view(request):
-   """Router"""
-   handlers = {
-       "GET": get_order,
-       "POST": post_order,
-       "DELETE": delete_order
-   }
-   
-   handler = handlers.get(request.method)
-   if not handler:
-       return BookingResponse.error_response(405, "Method not allowed")
-       
-   return handler(request)
+    """Router"""
+    handlers = {
+        "GET": get_order,
+        "POST": post_order,
+        "DELETE": delete_order
+    }
+    
+    handler = handlers.get(request.method)
+    if not handler:
+        return Response(
+            {"error": True, "message": "Method not allowed"},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+        
+    return handler(request)
 
-# Views
 def get_order(request):
-   try:
-       authorization = request.headers.get("Authorization")
-       user_id = BookingModel.get_user_id_from_token(authorization)
-       if user_id is None:
-           return BookingResponse.error_response(401, "Not logged in.")
+    try:
+        authorization = request.headers.get("Authorization")
+        user_id = BookingModel.get_user_id_from_token(authorization)
+        if user_id is None:
+            return Response(
+                {"error": True, "message": "Not logged in."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
-       cart_detail = BookingModel.get_cart_details(user_id)
-       if not cart_detail:
-           return BookingResponse.ok_response(data=None)
-       return BookingResponse.ok_response(data=cart_detail)
-   except ValueError as e: 
-       return BookingResponse.error_response(401, str(e))
-   except Exception as e:
-       print(f"[get_cart] error {e}")
-       return BookingResponse.error_response(500, "Internal server error")
+        cart_detail = BookingModel.get_cart_details(user_id)
+        if not cart_detail:
+            return Response({"data": None})
+        return Response({"data": cart_detail})
+    
+    except ValueError as e: 
+        return Response(
+            {"error": True, "message": str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except Exception as e:
+        print(f"[get_cart] error {e}")
+        return Response(
+            {"error": True, "message": "Internal server error"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 def post_order(request):
-   try:
-       try:
-           booking_data = json.loads(request.body)
-           booking = BookingInfo(**booking_data)
-       except ValidationError as ve:
-           error_messages = "; ".join(str(error) for error in ve.errors())
-           return BookingResponse.error_response(400, f"建立失敗，輸入不正確: {error_messages}")
-       
-       errors = booking.validate_booking()
-       if errors:
-           return BookingResponse.error_response(400, f"建立失敗，輸入不正確: {"; ".join(errors)}")
-       
-       authorization = request.headers.get("Authorization")
-       user_id = BookingModel.get_user_id_from_token(authorization)
-       if user_id is None:
-           return BookingResponse.error_response(403, "Not logged in.")
+    try:
+        serializer = BookingSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                {"error": True, "message": f"建立失敗，輸入不正確: {serializer.errors}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        authorization = request.headers.get("Authorization")
+        user_id = BookingModel.get_user_id_from_token(authorization)
+        if user_id is None:
+            return Response(
+                {"error": True, "message": "Not logged in."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
-       if BookingModel.create_new_cart(user_id, booking):
-           return BookingResponse.ok_response(message="成功加入購物車")
-       return BookingResponse.error_response(500, "Failed to create booking")
+        if BookingModel.create_new_cart(user_id, serializer.validated_data):
+            return Response(
+                {"ok": True, "message": "成功加入購物車"}
+            )
+            
+        return Response(
+            {"error": True, "message": "Failed to create booking"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
-   except Exception as e:
-       print(f"[create_cart] error: {e}")
-       return BookingResponse.error_response(500, "Internal server error")
+    except Exception as e:
+        print(f"[create_cart] error: {e}")
+        return Response(
+            {"error": True, "message": "Internal server error"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 def delete_order(request):
-   try:
-       authorization = request.headers.get("Authorization")
-       user_id = BookingModel.get_user_id_from_token(authorization)
-       if user_id is None:
-           return BookingResponse.error_response(403, "Not logged in.")
+    try:
+        authorization = request.headers.get("Authorization")
+        user_id = BookingModel.get_user_id_from_token(authorization)
+        if user_id is None:
+            return Response(
+                {"error": True, "message": "Not logged in."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
-       if BookingModel.clear_cart(user_id):
-           return BookingResponse.ok_response(message="刪除購物車裡的項目")
-       return BookingResponse.error_response(500, "Failed to delete booking")
+        if BookingModel.clear_cart(user_id):
+            return Response(
+                {"ok": True, "message": "刪除購物車裡的項目"}
+            )
+            
+        return Response(
+            {"error": True, "message": "Failed to delete booking"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
-   except Exception as e:
-       print(f"[clear_cart] error {e}")
-       return BookingResponse.error_response(500, "Internal server error")
+    except Exception as e:
+        print(f"[clear_cart] error {e}")
+        return Response(
+            {"error": True, "message": "Internal server error"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

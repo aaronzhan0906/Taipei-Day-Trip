@@ -18,7 +18,7 @@ def signup_user(request):
 
         if not all([name, email, password]):
             return Response(
-                {"error": True, "message": "資料不完整，請確認所有欄位都已填寫"}, 
+                {"error": True, "message": "Missing required fields"}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -30,20 +30,20 @@ def signup_user(request):
 
         if UserModel.get_user_by_email(email):
             return Response(
-                {"error": True, "message": "此電子信箱已被註冊"},
+                {"error": True, "message": "電子信箱已被註冊"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         UserModel.create_user(name, email, password)
         return Response(
-            {"ok": True, "message": "註冊成功"},
+            {"ok": True, "message": "User signed up successfully"},
             status=status.HTTP_201_CREATED
         )
 
     except Exception as e:
         print(f"[signup] error: {str(e)}")
         return Response(
-            {"error": True, "message": "系統錯誤，請稍後再試"},
+            {"error": True, "message": "Internal Server Error"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
@@ -52,9 +52,9 @@ def handle_auth(request):
     """
     GET/PUT /api/user/auth
     """
-    if request.method == 'GET':
+    if request.method == "GET":
         return get_user_info(request)
-    elif request.method == 'PUT':
+    elif request.method == "PUT":
         return signin_user(request)
 
 def get_user_info(request):
@@ -65,14 +65,14 @@ def get_user_info(request):
         auth_header = request.headers.get("Authorization")
         if not auth_header:
             return Response(
-                {"error": True, "message": "請先登入"},
+                {"error": True, "message": "Not logged in"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
         if auth_header == "null":
             return Response(
-                {"error": True, "message": "無效的認證令牌"},
-                status=status.HTTP_401_UNAUTHORIZED
+                {"error": True, "message": "Invalid token"},
+                status=status.HTTP_403_FORBIDDEN
             )
         
         token = auth_header.split()[1]
@@ -91,21 +91,21 @@ def get_user_info(request):
         })
 
     except ExpiredSignatureError:
-        print("[Auth] Token 已過期")
+        print("[ExpiredSignatureError] Token has expired.")
         return Response(
-            {"error": True, "message": "登入已過期，請重新登入"},
-            status=status.HTTP_401_UNAUTHORIZED
+            {"error": True, "message": "Token has expired"},
+            status=status.HTTP_403_FORBIDDEN
         )
     except InvalidTokenError:
-        print("[Auth] 無效的 Token")
+        print("[InvalidTokenError] Invalid Token")
         return Response(
-            {"error": True, "message": "無效的認證令牌"},
-            status=status.HTTP_401_UNAUTHORIZED
+            {"error": True, "message": "Invalid token"},
+            status=status.HTTP_403_FORBIDDEN
         )
     except Exception as e:
-        print(f"[get_user] error: {str(e)}")
+        print(f"[get_user_info] error: {str(e)}")
         return Response(
-            {"error": True, "message": "系統錯誤，請稍後再試"},
+            {"error": True, "message": "Internal Server Error"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
@@ -119,14 +119,14 @@ def signin_user(request):
 
         if not all([email, password]):
             return Response(
-                {"error": True, "message": "請輸入電子信箱和密碼"},
+                {"error": True, "message": "The logged-in user did not enter a username or password."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         user_data = UserModel.get_user_by_email(email)
         if not user_data or not UserModel.check_password(user_data[3], password):
             return Response(
-                {"error": True, "message": "電子信箱或密碼錯誤"},
+                {"error": True, "message": "The username or password is incorrect."},
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
@@ -138,15 +138,15 @@ def signin_user(request):
 
         response = Response({
             "ok": True,
-            "message": "登入成功",
+            "message": "User logged in successfully",
             "token": jwt_token
         })
         response["Authorization"] = f"Bearer {jwt_token}"
         return response
 
     except Exception as e:
-        print(f"[login] error: {str(e)}")
+        print(f"[signin_user] error: {str(e)}")
         return Response(
-            {"error": True, "message": "系統錯誤，請稍後再試"},
+            {"error": True, "message": "Internal Server Error"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )

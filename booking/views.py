@@ -85,10 +85,10 @@ def post_order(request):
             return Response(
                 {"ok": True, "message": "成功加入購物車"}
             )
-            
+    except ValueError as e: 
         return Response(
-            {"error": True, "message": "Failed to create booking"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            {"error": True, "message": str(e)},
+            status=status.HTTP_403_FORBIDDEN
         )
 
     except Exception as e:

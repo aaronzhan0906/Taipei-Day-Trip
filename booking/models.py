@@ -6,7 +6,7 @@ class BookingModel:
    @staticmethod
    def get_user_id_from_token(authorization: str) -> int:
         if authorization == "null":
-            raise ValueError("Not logged in.")
+            return None
         
         try:
             token = authorization.split()[1]

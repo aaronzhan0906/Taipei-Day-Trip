@@ -13,20 +13,20 @@ class BookingModel:
     @staticmethod
     def get_user_id_from_token(authorization: str) -> int:
         if authorization == "null":
-            raise HTTPException(status_code=403, detail="Not logged in.")
+            raise HTTPException(status_code=401, detail="Not logged in.")
         
         try:
             token = authorization.split()[1]
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             return payload["user_id"]
         except IndexError:
-            raise HTTPException(status_code=401, detail="Invalid authorization header")
+            raise HTTPException(status_code=403, detail="Invalid authorization header")
         except jwt.ExpiredSignatureError:
-            raise HTTPException(status_code=401, detail="Token has expired")
+            raise HTTPException(status_code=403, detail="Token has expired")
         except jwt.InvalidTokenError:
-            raise HTTPException(status_code=401, detail="Invalid token")
+            raise HTTPException(status_code=403, detail="Invalid token")
         except KeyError:
-            raise HTTPException(status_code=401, detail="Token payload is invalid")
+            raise HTTPException(status_code=403, detail="Token payload is invalid")
 
     @staticmethod
     def get_cart_details(user_id):

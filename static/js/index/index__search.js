@@ -4,19 +4,15 @@ const searchInput = document.querySelector(".hero__search-input");
 const searchButton = document.querySelector(".hero__search-button");
 
 
-export function searchInputApi() {
+export function clickForSearch() {
     searchButton.addEventListener("click", handleSearch);
-    searchInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-        handleSearch();
-        }
-    });
-    handleSearch();
-};
+}
 
 
 export async function handleSearch() {
     const keyword = searchInput.value;
+    if (!keyword) return
+    
     const searchApiUrl = `/api/attractions?page=0&keyword=${keyword}`;
 
     try {

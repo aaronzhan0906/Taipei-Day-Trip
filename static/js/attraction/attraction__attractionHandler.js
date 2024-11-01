@@ -6,18 +6,30 @@ export const attractionHandler = () =>{
 }
 
 export const timeAndCharge = () => {
-    const timeOptions = document.querySelectorAll(".booking__time--radio")
-    const costAmount = document.querySelector(".booking__cost--amount")
+    const timeOptions = document.querySelectorAll(".booking__time--radio");
+    const costAmount = document.querySelector(".booking__cost--amount");
 
-    timeOptions[0].checked = true;
-    costAmount.textContent = " 2000 ";
+    const checkSelectedOption = () => {
+        const selectedOption = document.querySelector(".booking__time--radio:checked");
+        if (selectedOption) {
+            const selectedTime = selectedOption.nextElementSibling?.textContent;
+            costAmount.textContent = selectedTime === "上半天" ? "2000" : "2500";
+        } else {
+            timeOptions[0].checked = true;
+            costAmount.textContent = "2000";
+        }
+    };
+
+    checkSelectedOption();
 
     timeOptions.forEach(option => {
         option.addEventListener("change", () => {
-            const selectedTime = document.querySelector(".booking__time--radio:checked")?.nextElementSibling?.textContent;
+            const selectedTime = option.nextElementSibling?.textContent;
             costAmount.textContent = selectedTime === "上半天" ? "2000" : "2500";
         });
     });
+
+    window.addEventListener("load", checkSelectedOption);
 };
 
 export const dateHandler = () => {

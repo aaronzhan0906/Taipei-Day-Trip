@@ -18,7 +18,7 @@ ACCESS_TOKEN_EXPIRE_TIME = int(os.getenv("ACCESS_TOKEN_EXPIRE_TIME"))
 
 class JWTHandler:
     @staticmethod
-    def create_jwt_token(email: str, user_id=str, name=str) -> str:
+    def create_jwt_token(email: str, user_id: str, name: str) -> str:
         payload = {
             "sub": email,
             "user_id": user_id,
@@ -31,9 +31,11 @@ class JWTHandler:
     
     @staticmethod
     def confirm_same_user_by_jwt(token: str, user_email: str) -> bool:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        payload["sub"] = user_email
-        return True
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            return payload["sub"] == user_email
+        except (jwt.ExpiredSignatureError, jwt.PyJWTError):
+            return False
     
     @staticmethod
     def get_user_email(token: str):

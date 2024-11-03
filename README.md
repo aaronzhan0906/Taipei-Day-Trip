@@ -42,7 +42,7 @@ https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
 
 ## Backend Technique
 #### Language / Framework
-- Python / FastAPI
+- Python / FastAPI、Django
 #### Database
 - MySQL
 - Redis

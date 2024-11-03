@@ -37,6 +37,8 @@ https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
 - Created **RWD** layout using **JavaScript, CSS, HTML**.
 - Implemented Infinite scroll, lazy loading, and Carousel Slider to enhance user experience.
 
+<br>
+
 ## Architecture
 <img width="100%" alt="TDT-Architecture" src="https://github.com/user-attachments/assets/7fad6d43-63b7-4a98-9c03-ead265d04cbb">
 
@@ -63,6 +65,8 @@ https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
 
 #### Payment Integration
 - TapPay SDK: Payment processing integration
+
+<br>
 
 ## Database Schema
 <img width="1060" alt="TDT-database schema" src="https://github.com/user-attachments/assets/c07ed240-2fb8-4bfa-8771-0bda1a0afe01">

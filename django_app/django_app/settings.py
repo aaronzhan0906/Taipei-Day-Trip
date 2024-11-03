@@ -136,4 +136,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 APPEND_SLASH = False
 
 # deploy
-ALLOWED_HOSTS = ["0.0.0.0", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = [
+    "taipeidaytrip.online",
+    "0.0.0.0", 
+    "localhost", 
+    "127.0.0.1"
+    ]

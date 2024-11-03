@@ -27,18 +27,18 @@ https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
 
 ## Features and Techniques
 
-- Member system : **JWT token-based** authentication
-- Online shopping : Shopping cart system, Infinite scroll, lazy loading, and Carousel Slider
-- Cross-device compatibility: **Responsive Web Design** (**RWD**) using **JavaScript**, **CSS**, and **HTML**
-- Online payments: Integration of **TapPay SDK** third-party payment service
-- Data management: Normalized **MySQL** database in **3NF** with optimized queries using indexes and connection pooling.
-- Cache: **Redis** caching for recently accessed attraction data, improving loading speed.
-- Frontend-backend communication: **RESTful API** implementation
-- Web server: **Nginx** for reverse proxy and **SSL** services
-- Cloud deployment: **AWS EC2** instances managed with **Docker Compose**
+- Developed the backend using **Python / FastAPI** and refactored a version using **Django**.
+- Normalized **MySQL** database in **3NF** with optimized queries using indexes and connection pooling.
+- Utilized **Redis** to cache recently accessed attraction data, improving loading speed.
+- Implemented **JWT** for authentication and authorization.
+- Set up **Nginx** for reverse proxy and **SSL** services.
+- Implemented a **RESTful API** as the interface between the frontend and backend.
+- Integrated the **TapPay SDK** for third-party payment services.
+- Created **RWD** layout using **JavaScript, CSS, HTML**.
+- Implemented Infinite scroll, lazy loading, and Carousel Slider to enhance user experience.
 
 ## Architecture
-<img width="100%" alt="TDT-Architecture" src="https://github.com/user-attachments/assets/20bcaa59-2ff4-43ad-9eea-84d17f7341a2">
+<img width="100%" alt="TDT-Architecture" src="https://github.com/user-attachments/assets/7fad6d43-63b7-4a98-9c03-ead265d04cbb">
 
 ## Backend Technique
 #### Language / Framework
@@ -60,17 +60,6 @@ https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
 #### Infrastructure
 - Nginx
 - SSL(CertBot)
-
-#### Third Party Libraries
-- aiohttp: Asynchronous HTTP client/server framework
-- bcrypt: Password hashing
-- mysql-connector-python: MySQL database driver
-- pydantic: Data validation and settings management
-- python-dotenv: Loads environment variables from .env files
-- PyJWT: JSON Web Token implementation
-- shortuuid: Generation of order numbers
-- TapPay SDK: Payment processing integration
-- uvicorn: ASGI server
 
 #### Payment Integration
 - TapPay SDK: Payment processing integration

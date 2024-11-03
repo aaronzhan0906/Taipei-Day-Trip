@@ -25,7 +25,7 @@ https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
 
 <br>
 
-## Features and Techniques
+## Techniques and Features
 
 - Developed the backend using **Python / FastAPI** and refactored a version using **Django**.
 - Normalized **MySQL** database in **3NF** with optimized queries using indexes and connection pooling.

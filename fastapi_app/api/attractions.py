@@ -123,8 +123,8 @@ async def attractions(page: int = Query(0, ge=0), keyword: str = Query(None)):
                 filters.append("mrt = %s")
                 params.append(keyword) 
             else:
-                filters.append("name LIKE %s")
-                params.append(f"%{keyword}%")
+                filters.append("(name LIKE %s OR mrt LIKE %s)")
+                params.extend([f"%{keyword}%", f"%{keyword}%"])
         
         total_count = AttractionModel.get_total_count(filters, params)
         attractions_tuple = AttractionModel.get_attractions(limit, offset, filters, params)

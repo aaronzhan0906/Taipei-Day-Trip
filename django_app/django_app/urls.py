@@ -28,5 +28,5 @@ urlpatterns = [
     path("api/order/", include("order.urls")),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG: # Only serve static files in development mode
     urlpatterns += static(settings.STATIC_URL, document_root=STATIC_DIR)

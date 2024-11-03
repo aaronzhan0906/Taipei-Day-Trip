@@ -6,18 +6,30 @@ export const attractionHandler = () =>{
 }
 
 export const timeAndCharge = () => {
-    const timeOptions = document.querySelectorAll(".booking__time--radio")
-    const costAmount = document.querySelector(".booking__cost--amount")
+    const timeOptions = document.querySelectorAll(".booking__time--radio");
+    const costAmount = document.querySelector(".booking__cost--amount");
 
-    timeOptions[0].checked = true;
-    costAmount.textContent = " 2000 ";
+    const checkSelectedOption = () => {
+        const selectedOption = document.querySelector(".booking__time--radio:checked");
+        if (selectedOption) {
+            const selectedTime = selectedOption.nextElementSibling?.textContent;
+            costAmount.textContent = selectedTime === "上半天" ? "2000" : "2500";
+        } else {
+            timeOptions[0].checked = true;
+            costAmount.textContent = "2000";
+        }
+    };
+
+    checkSelectedOption();
 
     timeOptions.forEach(option => {
         option.addEventListener("change", () => {
-            const selectedTime = document.querySelector(".booking__time--radio:checked")?.nextElementSibling?.textContent;
+            const selectedTime = option.nextElementSibling?.textContent;
             costAmount.textContent = selectedTime === "上半天" ? "2000" : "2500";
         });
     });
+
+    window.addEventListener("load", checkSelectedOption);
 };
 
 export const dateHandler = () => {
@@ -42,19 +54,18 @@ export const bookingInAttractionPage = () => {
     const bookingForm = document.querySelector(".section__booking");
     const user = document.querySelector(".user");
     const overlay = document.querySelector(".overlay");
+    const formEmail = document.querySelector(".form__email");
+    const formPassword = document.querySelector(".form__password");
     
     
     if (bookingForm) {
         bookingForm.addEventListener("submit", async function (event) {
             event.preventDefault();
-            const getJWT = localStorage.getItem("jwt")
 
-            const formData = new FormData(event.target);
-          
+            const formData = new FormData(event.target);  
             const path = window.location.pathname;
             const parts = path.split("/");
             const attractionId = parts[parts.length - 1];
-            
             const date = formData.get("date");
             const timeRadios = formData.getAll("time");
             let time = "morning"; 
@@ -87,17 +98,14 @@ export const bookingInAttractionPage = () => {
             });
             
             if (response.ok) {
-                // const newToken = response.headers.get("Authorization");
-                // if (newToken) {
-                //     localStorage.setItem("jwt", newToken);
-                // }
                 window.location.href = "/booking";
-                // console.log("預定成功");
             } else {
                 const errorData = await response.json();
                 console.log(errorData)
                 user.style.display = "block";
                 overlay.style.display = "block";
+                formEmail.value = "test@gmail.com";
+                formPassword.value = "test";
             }
             } catch (error) {
                 console.error("預定過程中發生錯誤:", error);

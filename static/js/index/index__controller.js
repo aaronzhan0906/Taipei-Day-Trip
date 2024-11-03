@@ -1,5 +1,6 @@
 import { fetchAttractionsData } from "./index__attractions.js";
 import { listBarApi } from "./index__listbar.js";
+import { clickForSearch } from "./index__search.js";
 
 // utils //
 import { getUserDomElements, setupEventListeners } from "../utils/user__dom.js"
@@ -11,6 +12,7 @@ window.addEventListener("DOMContentLoaded", () => {
     // attractions //
     fetchAttractionsData();
     listBarApi();
+    clickForSearch();
 
     // user //
     const elements = getUserDomElements();

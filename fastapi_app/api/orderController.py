@@ -21,7 +21,7 @@ class OrderDetail(BaseModel):
 async def post_order(order_detail: OrderDetail, authorization: str = Header(...)):
 
     if authorization == "null": 
-        return OrderView.error_response(403, "Not logged in.")
+        return OrderView.error_response(401, "Not logged in.")
     
     if not OrderModel.validate_phone(order_detail.order.contact["phone"]):
         return OrderView.error_response(400, "訂單建立失敗，手機號碼格式錯誤")
@@ -50,7 +50,7 @@ async def post_order(order_detail: OrderDetail, authorization: str = Header(...)
 @router.get("/api/order/{orderNumber}")
 async def get_order(orderNumber: str, authorization: str = Header(...)):
     if authorization == "null":
-        return OrderView.error_response(403, "Not logged in.")
+        return OrderView.error_response(401, "Not logged in.")
     
     try:
         order = await OrderModel.get_order(orderNumber)

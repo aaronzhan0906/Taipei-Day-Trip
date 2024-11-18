@@ -10,7 +10,6 @@ mysql-connector-python==8.4.0
 redis==5.0.7
 
 # Async Support
-aiofiles==24.1.0
 aiohttp==3.9.5
 
 # Security & Authentication

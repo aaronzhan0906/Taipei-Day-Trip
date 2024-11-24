@@ -58,7 +58,7 @@ https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
 - Docker
 - Docker-compose
 
-#### Authentication and Authorization 
+#### Authentication
 - JWT
 
 #### Infrastructure

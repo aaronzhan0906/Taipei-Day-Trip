@@ -32,7 +32,7 @@ https://github.com/user-attachments/assets/405b9515-6cda-47b3-acd8-4f82ee133779
 - Developed the backend using **Python / FastAPI** and refactored a version using **Django**.
 - Normalized **MySQL** database in **3NF** with optimized queries using indexes and connection pooling.
 - Utilized **Redis** to cache recently accessed attraction data, improving loading speed.
-- Implemented **JWT** for authentication and authorization.
+- Implemented **JWT** for authentication.
 - Set up **Nginx** for reverse proxy and **SSL** services.
 - Implemented a **RESTful API** as the interface between the frontend and backend.
 - Integrated the **TapPay SDK** for third-party payment services.
